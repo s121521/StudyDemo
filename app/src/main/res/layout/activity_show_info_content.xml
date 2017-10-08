@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="1dp"
+    android:layout_marginRight="3dp"
+    android:layout_marginTop="1dp">
+
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:gravity="right|center_vertical"
+            android:layout_marginRight="10dp"
+            android:background="@color/color_translucent"
+            android:text="ID:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:background="#fff"
+            android:singleLine="true"
+            android:gravity="left|center_vertical"
+            android:hint="ID....." />
+    </TableRow>
+
+
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:gravity="right|center_vertical"
+            android:layout_marginRight="10dp"
+            android:text="经度:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:singleLine="true"
+            android:hint="111.2584512" />
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="10dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="纬度:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="20"
+            android:singleLine="true"
+            android:hint="12.3251" />
+    </TableRow>
+
+   <!-- <TableRow>
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="样方周长:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:id="@+id/yf_perimeter_edit"
+            android:maxLength="20"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:id="@+id/perimeter_btn"
+            android:text="测量"
+            android:onClick="perimeterMethod"
+            />
+    </TableRow>-->
+    <TableRow>
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="样方周长:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="0.5"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="20"
+            android:id="@+id/yf_perimeter_edit"
+            android:singleLine="true"
+            />
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="样方面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="0.5"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:id="@+id/yf_area_edit"
+            android:maxLength="20"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="60dp"
+            android:text="测量"
+            android:id="@+id/area_btn"
+            android:onClick="areaMethod"
+            />
+    </TableRow>
+    <!--dfgfdgdfgdfgdf-->
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+    <TableRow>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:gravity="right"
+            android:layout_marginRight="10dp"
+            android:text="面积:" />
+
+        <EditText
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="@color/font_color"
+            android:textSize="@dimen/font_size"
+            android:maxLength="10"
+            android:singleLine="true"
+            />
+        <Button
+            android:layout_height="40dp"
+            android:layout_width="20dp"
+            android:text="测量"
+
+            />
+    </TableRow>
+
+</TableLayout>

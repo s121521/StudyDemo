@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:orientation="vertical"
+    android:weightSum="1"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewtopshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样地编号" />
+
+        <EditText
+            android:id="@+id/sampleplot_editText_ID"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewtopshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="日期" />
+
+        <EditText
+            android:id="@+id/sampleplot_editText__date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="记录人" />
+        <EditText
+            android:id="@+id/sampleplot_editText_jlr"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="经纬度" />
+
+        <EditText
+            android:id="@+id/sampleplot_editText__latlng"
+            android:layout_width="126dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.82"
+            android:background="@drawable/editviewshape"
+            android:paddingLeft="4dp"
+            android:digits="0123456789,."
+            android:text=""
+            android:textSize="14sp"
+            android:hint="33.000,111.000" />
+
+        <Button
+            android:id="@+id/sampleplot_btn_getlatlog"
+            android:layout_width="50dp"
+            android:layout_height="29dp"
+            android:layout_marginLeft="2dp"
+            android:background="@drawable/cl_button_shape"
+            android:onClick="getLatlog"
+            android:shadowColor="#5EA88F"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:text="获取"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.01">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="地形地貌" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:orientation="horizontal"
+            android:id="@+id/radioGroup_dxdm"
+            android:weightSum="1">
+            <RadioButton
+                android:text="平原"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radioButton2"
+                android:layout_marginTop="10dp"
+                android:layout_weight="0.20" />
+            <RadioButton
+                android:text="山地"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radioButton3"
+                android:layout_weight="0.23"
+                android:layout_marginTop="10dp" />
+            <RadioButton
+                android:text="丘陵"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radioButton4"
+                android:layout_weight="0.00"
+                android:layout_marginTop="10dp" />
+
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样表类型" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            >
+
+            <CheckBox
+                android:text="@string/submenu_report1_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:id="@+id/sampleplot_checkBox_report1" />
+
+            <CheckBox
+                android:text="@string/submenu_report3_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sampleplot_checkBox_report3"
+                android:layout_below="@+id/sampleplot_checkBox_report1"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="14dp" />
+
+            <CheckBox
+                android:text="样方五"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sampleplot_checkBox_report5"
+                android:layout_below="@+id/sampleplot_checkBox_report3"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="21dp" />
+
+            <CheckBox
+                android:text="@string/submenu_report4_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sampleplot_checkBox_report4"
+                android:layout_marginStart="34dp"
+                android:layout_alignBaseline="@+id/sampleplot_checkBox_report3"
+                android:layout_alignBottom="@+id/sampleplot_checkBox_report3"
+                android:layout_toEndOf="@+id/sampleplot_checkBox_report1" />
+
+            <CheckBox
+                android:text="@string/submenu_report2_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sampleplot_checkBox_report2"
+                android:layout_alignParentTop="true"
+                android:layout_alignStart="@+id/sampleplot_checkBox_report4" />
+        </RelativeLayout>
+
+    </LinearLayout>
+</LinearLayout>

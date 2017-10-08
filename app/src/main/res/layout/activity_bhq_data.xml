@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_bhq_data"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yaotu.proj.studydemo.activity.BhqDataActivity">
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:layout_alignParentTop="true"
+        android:id="@+id/bhq_Query_etxt"
+        android:hint="请输入您要查询的保护区名称..."
+        android:textSize="12sp"
+        />
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/SwipeRLayout"
+        android:layout_below="@id/bhq_Query_etxt"
+        >
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/bhq_ListView"
+            >
+        </ListView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</RelativeLayout>

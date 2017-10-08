@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_new_energy_proj"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yaotu.proj.studydemo.activity.NewEnergyProjActivity">
+    <!--底部提交按钮-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#f0f"
+        android:orientation="horizontal"
+        android:id="@+id/LinearLayoutButtom"
+        android:layout_alignParentBottom="true"
+        >
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/comit_btn_seletor"
+            android:onClick="submitBtnMethod"
+            android:text="@string/tkenterpriseCommitBtn"
+            tools:ignore="ButtonStyle" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/comit_btn_seletor"
+            android:layout_weight="1"
+            android:onClick="saveBtnMethod"
+            android:text="@string/tkenterpriseSaveBtn"
+            tools:ignore="ButtonStyle" />
+    </LinearLayout>
+
+    <!--显示地图-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:id="@+id/show_mapview_LinearLayout"
+        android:layout_above="@id/LinearLayoutButtom"
+        android:orientation="horizontal"
+        >
+        <include layout="@layout/activity_baidu_mapview"></include>
+    </LinearLayout>
+
+    <!---->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:id="@+id/scrollViewID"
+        android:layout_above="@id/show_mapview_LinearLayout"
+        >
+        <include layout="@layout/activity_new_energy_proj_content"></include>
+    </ScrollView>
+</RelativeLayout>

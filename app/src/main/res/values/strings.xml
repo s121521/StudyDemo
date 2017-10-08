@@ -1,0 +1,44 @@
+<resources>
+    <!--谨慎修改以下内容-->
+    <string name="app_name">外业采集</string>
+    <string name="start_place">输入起点</string>
+    <string name="end_place">输入终点</string>
+    <string name="search">搜索</string>
+    <string name="show_info_page">详细信息</string>
+    <!--Activity的标题-->
+
+    <!--样例表中子菜单表名称-->
+    <string name="submenu_report1_name">探矿企业</string>
+    <string name="submenu_report2_name">工业企业</string>
+    <string name="submenu_report3_name">矿产资源开发企业</string>
+    <string name="submenu_report4_name">旅游资源开发企业</string>
+    <string name="submenu_report5_name">新能源项目</string>
+    <string name="submenu_report6_name">开垦活动</string>
+    <string name="submenu_report7_name">其他开发建设活动</string>
+    <string name="submenu_gps">GPS航迹</string>
+    <string name="submenu_way_analyze">路径分析</string>
+    <string name="submenu_report_data">样方数据</string>
+    <string name="submenu_layer">图  层</string>
+    <string name="submenu_backdata">未通过数据</string>
+    <string name="submenu_complete">本地数据</string>
+    <!--菜单项名称-->
+    <string name="menu_report">样例表</string>
+    <string name="menu_look">查  看</string>
+    <string name="menu_function">功  能</string>
+    <string name="menu_clean">清  除</string>
+    <!--photo-->
+    <string name="pic_totalNum">2</string>
+    <string name="finish">完成</string>
+    <string name="title_activity_industry">工业企业</string>
+    <string name="title_activity_kczy_develop_enterprise">KczyDevelopEnterpriseActivity</string>
+    <!--布局文件text值-->
+    <string name="tkenterpriseCommitBtn">提交</string>
+    <string name="tkenterpriseSaveBtn">保存</string>
+    <string name="tkenterpriseCancleBtn">取消</string>
+    <string name="tk_content_BtnObtain">获取</string>
+    <string name="dot_point">打点</string>
+    <string name="reset">重置</string>
+    <!--网络请求地址-->
+    <string name="http_url">http://192.168.0.8</string>
+    <string name="http_gis">http://192.168.0.122:6080</string>
+</resources>

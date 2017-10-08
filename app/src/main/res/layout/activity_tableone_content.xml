@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_coutent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:background="@drawable/contentshape"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewtopshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样地名称" />
+
+        <EditText
+            android:id="@+id/report1_editText_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewtopshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="采样日期" />
+
+        <EditText
+            android:id="@+id/report1_editText_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样地类型" />
+
+        <Spinner
+            android:id="@+id/report1_spinner_type"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:entries="@array/Y_TYPE"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:textSize="14sp" />
+    </LinearLayout>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样方面积" />
+
+        <EditText
+            android:id="@+id/report1_editText_area"
+            android:layout_width="126dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.82"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/report1_btn_cl"
+            android:layout_width="50dp"
+            android:layout_height="29dp"
+            android:layout_marginLeft="2dp"
+            android:background="@drawable/cl_button_shape"
+            android:onClick="measuerArea"
+            android:shadowColor="#5EA88F"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:text="测量"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样方周长" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:id="@+id/report1_editText_perimeter"
+            android:text=""
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="样地图" />
+
+        <GridView
+            android:id="@+id/gridvidw"
+            android:layout_width="126dp"
+            android:layout_height="match_parent"
+            android:horizontalSpacing="5dp"
+            android:numColumns="2"
+            android:background="@drawable/editviewshape"
+            android:scrollbars="none"
+            android:verticalSpacing="5dp"
+            android:layout_weight="0.82" />
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="29dp"
+            android:layout_marginLeft="2dp"
+            android:background="@drawable/cl_button_shape"
+            android:shadowColor="#5EA88F"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
+            android:text="重选"
+            android:onClick="photoReset"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="39dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="植物名称" />
+
+        <!--grass 草-->
+        <Spinner
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:id="@+id/spinner_grass"
+            android:layout_weight="0.82"
+            android:clickable="false" />
+
+        <ToggleButton
+            android:text="ToggleButton"
+            android:layout_width="50dp"
+            android:layout_height="29dp"
+            android:id="@+id/tableone_tbtn"
+            android:background="@drawable/cl_button_shape"
+            android:checked="true" />
+
+    </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollViewID"
+        >
+        <include layout="@layout/activity_tableone_content_item"></include>
+    </ScrollView>
+</LinearLayout>

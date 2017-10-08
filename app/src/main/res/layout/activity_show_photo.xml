@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/albumBackground"
+    >
+    <RelativeLayout
+        android:id="@+id/above_complete_photo"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/plugin_camera_title_bar"
+        android:gravity="center_vertical"
+        >
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="2dp"
+            android:layout_alignParentRight="true"
+            android:text="完成"
+            android:id="@+id/complete_btn"
+            android:textColor="#fff"
+            android:textSize="12sp"
+            android:background="@drawable/plugin_camera_title_btn_complete"
+            android:gravity="center"
+            />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/bottom_show_preview_photo"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/plugin_camera_title_bar" >
+       <!-- <Button
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="2dp"
+            android:textColor="#fff"
+            android:textSize="12sp"
+            android:id="@+id/preview_btn"
+            android:text="预览"
+            android:background="@drawable/plugin_camera_title_btn_preview"
+            />
+-->
+    </RelativeLayout>
+
+    <GridView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/allPhoto_gridView"
+        android:layout_above="@id/bottom_show_preview_photo"
+        android:layout_below="@id/above_complete_photo"
+        android:layout_marginRight="1dp"
+        android:layout_marginLeft="1dp"
+        android:layout_centerInParent="true"
+        android:numColumns="4"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
+        ></GridView>
+
+</RelativeLayout>

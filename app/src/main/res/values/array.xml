@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="YD_TYPE">
+        <item>草原类</item>
+        <item>草原亚类 </item>
+        <item>样地一</item>
+        <item>样地二</item>
+        <item>样地三</item>
+    </string-array>
+    <string-array name="Y_TYPE">
+        <item>样方一</item>
+        <item>样方二 </item>
+        <item>样方三</item>
+        <item>样方四</item>
+        <item>样方五</item>
+    </string-array>
+    <!--草本类-->
+    <string-array name="herbal">
+        <item>无芒隐子草</item>
+        <item>小针茅</item>
+        <item>阿氏旋花</item>
+        <item>木地肤</item>
+        <item>沙苔草</item>
+        <item>猪毛菜</item>
+        <item>多根葱</item>
+        <item>冷蒿</item>
+    </string-array>
+
+    <string-array name="bhq_nm">
+        <item>暂无数据...</item>
+    </string-array>
+</resources>

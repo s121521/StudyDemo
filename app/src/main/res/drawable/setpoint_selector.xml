@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+android:state_pressed 是否按下，如一个按钮触摸或者点击。
+android:state_focused 是否取得焦点，比如用户选择了一个文本框。
+android:state_hovered 光标是否悬停，通常与focused state相同，它是4.0的新特性
+android:state_selected 被选中
+android:state_checkable 组件是否能被check。如：RadioButton是可以被check的。
+android:state_checked 被checked了，如：一个RadioButton可以被check了。
+android:state_enabled 能够接受触摸或者点击事件
+android:state_activated 被激活
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/setpoint_press"></item>
+    <item android:state_pressed="false" android:drawable="@drawable/setpoint_enable"></item>
+</selector>

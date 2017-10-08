@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <com.baidu.mapapi.map.MapView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/report_mapview"
+        ></com.baidu.mapapi.map.MapView>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/loc_seletor"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:id="@+id/imgBtn_moveCurrt"
+        android:onClick="moveCurrentPosition"
+        />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dot_point"
+        android:background="@drawable/setpoint_selector"
+        android:id="@+id/dot_btn"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="3dp"
+        android:onClick="getDotMethod"
+        tools:ignore="RtlHardcoded" />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reset"
+        android:id="@+id/reset_btn"
+        android:layout_above="@id/dot_btn"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/resest_selector"
+        android:layout_marginRight="3dp"
+        android:onClick="resetMethod"
+        />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="取值"
+        android:id="@+id/getvelue_btn"
+        android:layout_above="@id/reset_btn"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/getvalue_selector"
+        android:onClick="getValueMethod"
+        android:layout_marginRight="3dp"
+        tools:ignore="HardcodedText" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/report1_textview_area"
+        android:textSize="@dimen/font_size"
+        android:textColor="@color/red"
+        />
+</RelativeLayout>

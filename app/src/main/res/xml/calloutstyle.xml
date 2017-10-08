@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    frameColor       框架的颜色（就是整个信息框的四周边缘颜色）
+    backgroundColor  信息框的整个内在的背景颜色
+    backgroundAlpha  0(透明) to 255(不透明) 设置透明度参数
+    anchor           anchor的位置（0-8，根据ANCHOR_POSITION_XXX常量的选择）
+    cornerCurveDp    曲率半径的角落密度独立调出窗口的像素
+   -->
+    <calloutViewStyle
+        anchor="5"
+        backgroundAlpha="255"
+        backgroundColor="#ffffff"
+        cornerCurveDp="12"
+        frameColor="#000000"
+        maxHeightDp="300"
+        maxWidthDp="500" />
+</resources>

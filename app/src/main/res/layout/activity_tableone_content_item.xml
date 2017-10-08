@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/activity_tableone_content_itemLayout"
+    android:orientation="vertical"
+    android:weightSum="1">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.07">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="绝对高度(cm)" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:weightSum="1">
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/textviewshape"
+                    android:gravity="right|center_vertical"
+                    android:paddingRight="2dp"
+                    android:text="生殖枝" />
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/editviewshape"
+                    android:inputType="textPersonName"
+                    android:paddingLeft="4dp"
+                    android:text=""
+                    android:id="@+id/report1_item_editText_szy"
+                    android:textSize="14sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:weightSum="1">
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/textviewshape"
+                    android:gravity="right|center_vertical"
+                    android:paddingRight="2dp"
+                    android:text="叶层" />
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/editviewshape"
+                    android:inputType="textPersonName"
+                    android:paddingLeft="4dp"
+                    android:text=""
+                    android:id="@+id/report1_item_editText_yc"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.07">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="分盖度(%)" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:id="@+id/report1_item_editText_fgd"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.07">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="物候期" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:paddingLeft="4dp"
+            android:text=""
+            android:id="@+id/report1_item_editText_whq"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.07">
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text="产草量(g)" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:weightSum="1">
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/textviewshape"
+                    android:gravity="right|center_vertical"
+                    android:paddingRight="2dp"
+                    android:text="鲜重" />
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/editviewshape"
+                    android:inputType="textPersonName"
+                    android:paddingLeft="4dp"
+                    android:text=""
+                    android:id="@+id/report1_item_editText_xz"
+                    android:textSize="14sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:weightSum="1">
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/textviewshape"
+                    android:gravity="right|center_vertical"
+                    android:paddingRight="2dp"
+                    android:text="干重" />
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/editviewshape"
+                    android:inputType="textPersonName"
+                    android:paddingLeft="4dp"
+                    android:text=""
+                    android:id="@+id/report1_item_editText_gz"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_weight="0.07">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:text="保存"
+            android:background="@drawable/cl_button_shape"
+            android:onClick="saveGrass"
+            />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+   >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#f0f"
+        android:orientation="horizontal"
+        android:id="@+id/addSampleplot_ButtomButton"
+        android:layout_alignParentBottom="true"
+        >
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/comit_btn_seletor"
+            android:onClick="addMethod"
+            android:text="提交" />
+    </LinearLayout>
+    <!--显示地图-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:id="@+id/addSampleplot_showmap_Layout"
+        android:layout_above="@id/addSampleplot_ButtomButton"
+        android:orientation="horizontal"
+        >
+        <include layout="@layout/activity_addsampleplot_mapview"></include>
+    </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/addSampleplot_showmap_Layout"
+        >
+        <include layout="@layout/activity_addsampleplot_content"/>
+    </ScrollView>
+</RelativeLayout>

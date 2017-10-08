@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context="com.yaotu.proj.studydemo.activity.MainActivity">
+
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/my_framentLayout"
+        >
+       <!-- <com.baidu.mapapi.map.MapView
+            android:id="@+id/mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></com.baidu.mapapi.map.MapView>-->
+    </FrameLayout>
+    <!--此TextView用来标记当前外业采集点-->
+    <TextView
+        android:id="@+id/txt_pType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:layout_marginLeft="10dp"
+        android:textColor="#f00"
+        android:visibility="gone"
+        tools:ignore="RtlHardcoded" />
+    <!---->
+
+    <TextView
+        android:id="@+id/txt_pName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:layout_marginLeft="10dp"
+        android:textColor="#f00"
+
+        tools:ignore="RelativeOverlap,RtlHardcoded" />
+    <!---->
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="80dp"
+        android:layout_marginLeft="20dp"
+        android:background="@drawable/loc_seletor"
+        android:onClick="locCurrent"
+        tools:ignore="ContentDescription,RtlHardcoded" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/zoomout_seletor"
+        android:id="@+id/arcgis_map_zoom_out"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="80dp"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:onClick="arcgisZoomOut"
+        tools:ignore="ContentDescription,RtlHardcoded" />
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/zoomin_seletor"
+        android:id="@+id/arcgis_map_zoom_in"
+        android:layout_above="@id/arcgis_map_zoom_out"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:onClick="arcgisZoomIn"
+        tools:ignore="ContentDescription,RtlHardcoded" />
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/radioGroupLayer"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:layout_above="@id/arcgis_map_zoom_in"
+        android:layout_marginBottom="50dp"
+        >
+        <RadioButton
+            android:id="@+id/hbLayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="环保"
+            android:checked="true"
+            android:textColor="@color/red"
+            />
+        <RadioButton
+            android:id="@+id/lylayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="林业"
+            android:textColor="@color/red"
+            />
+    </RadioGroup>
+    <ImageButton
+        android:id="@+id/BtnSaveLocalGetvalue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/radioGroupLayer"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/setpoint_end_selector"
+        android:onClick="setLocalGetValueEnd"
+        />
+    <ImageButton
+        android:id="@+id/BtnSetLocalGetvalue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/BtnSaveLocalGetvalue"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="50dp"
+        android:onClick="setLocalGetValue"
+        android:background="@drawable/setpoint_selector"
+        />
+    <!--<include layout="@layout/activity_main_map"></include>-->
+    <View
+        android:id="@+id/main_div_line"
+        android:layout_width="match_parent"
+        android:layout_height="0.000005dip"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dip"
+        android:background="#53868B" />
+
+    <include layout="@layout/activity_main_custommenu"></include>
+    <!--用来显示计算周长和面积-->
+    <TextView
+        android:id="@+id/txt_showInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical"
+        android:text=""
+        android:textColor="@color/red"
+        android:textSize="16sp" />
+
+</RelativeLayout>

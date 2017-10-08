@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:descendantFocusability="blocksDescendants"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/editviewshape"
+        >
+        <TextView
+            android:id="@+id/complete_list_qyName"
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:text="企业名称" />
+        <TextView
+            android:id="@+id/complete_list_tbr"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_toRightOf="@id/complete_list_qyName"
+            android:gravity="center"
+            android:text="填表人" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:paddingRight="2dp"
+            android:id="@+id/uploadBtn"
+            android:background="@drawable/cl_button_shape"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/complete_list_tbr"
+            android:text="上传"
+            />
+    </RelativeLayout>
+</LinearLayout>
