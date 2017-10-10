@@ -1,10 +1,8 @@
 package com.yaotu.proj.studydemo.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
@@ -14,9 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.IdRes;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -26,28 +21,21 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.DotOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapPoi;
-import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.Marker;
@@ -59,39 +47,27 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolygonOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.Stroke;
-import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.model.LatLngBounds;
-import com.baidu.mapapi.utils.AreaUtil;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.esri.android.map.Callout;
-import com.esri.android.map.FeatureLayer;
 import com.esri.android.map.GraphicsLayer;
-import com.esri.android.map.Layer;
 import com.esri.android.map.LocationDisplayManager;
-import com.esri.android.map.MapOnTouchListener;
-import com.esri.android.map.MapOptions;
 import com.esri.android.map.MapView;
 import com.esri.android.map.ags.ArcGISDynamicMapServiceLayer;
 import com.esri.android.map.ags.ArcGISLocalTiledLayer;
 import com.esri.android.map.event.OnSingleTapListener;
 import com.esri.android.map.event.OnStatusChangedListener;
 import com.esri.android.runtime.ArcGISRuntime;
-import com.esri.core.geodatabase.Geodatabase;
-import com.esri.core.geodatabase.GeodatabaseFeatureTable;
 import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.Latlon;
 import com.esri.core.geometry.Line;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.SpatialReference;
-import com.esri.core.map.CallbackListener;
 import com.esri.core.map.Feature;
-import com.esri.core.map.FeatureResult;
 import com.esri.core.map.FeatureSet;
 import com.esri.core.map.Graphic;
 import com.esri.core.renderer.SimpleRenderer;
@@ -100,21 +76,17 @@ import com.esri.core.symbol.SimpleFillSymbol;
 import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.esri.core.symbol.Symbol;
-import com.esri.core.tasks.query.QueryParameters;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.yaotu.proj.studydemo.R;
 import com.yaotu.proj.studydemo.bean.BhqHbhcBean;
-import com.yaotu.proj.studydemo.bean.BhqPointInfoBean;
 import com.yaotu.proj.studydemo.bean.FlagBean;
-import com.yaotu.proj.studydemo.bean.ImageBucket;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.CustomWinMenu;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentArcgisLayer;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
-import com.yaotu.proj.studydemo.util.FileUtils;
 import com.yaotu.proj.studydemo.util.MyGeoDataBase;
 
 import org.json.JSONArray;
@@ -132,8 +104,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import okhttp3.FormBody;
 import okhttp3.Response;
@@ -154,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
     private Polyline polyline = null;
     private Polygon polygon = null;
     private LocationDisplayManager locdisMag;
-    //private boolean dcFlag=false,scFlag=false;  //此标记用FlagBean替代
     private Geometry.Type drawType;
     private Context context = MainActivity.this;
     private final String TAG = getClass().getName();
@@ -163,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     private GraphicsLayer GpsLayer;//用于显示GPS航迹图层
     private Point query_point = null;//用于表示从离线geodatabase中查出的点
     private String menuFlag;//用于菜单创建子菜单时的标记
-    private ArcGISLocalTiledLayer localTiledImgLayer=null,localTiledOtherLayer,hbTileLayer=null,lyTileLayer=null;
+    private ArcGISLocalTiledLayer localTiledImgLayer=null,localTiledOtherLayer;
     private com.baidu.mapapi.map.MapView mapView_baidu;
     private BaiduMap baiduMap;
     private Location m_location;
@@ -185,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
     private Cursor bhqCursor;
     private  File localImgFolder;//离线文件夹(存放影像图或矢量图)
     private File localLayerFolder;//离线文件夹(存放离线图层)
+    private File localFileFolder;//保存文件
     private String localImgName;//离线影像或矢量图名称
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,11 +183,15 @@ public class MainActivity extends AppCompatActivity {
         //---------------------------
         localImgFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisImg");
         localLayerFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/arcgisLayer");
+        localFileFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/arcgisFile");
         if (!localImgFolder.exists()) {
             localImgFolder.mkdirs();
         }
         if (!localLayerFolder.exists()) {
             localLayerFolder.mkdirs();
+        }
+        if (!localFileFolder.exists()) {
+            localFileFolder.mkdirs();
         }
         Log.i(TAG, "onCreate: "+localImgFolder.getAbsolutePath()+"==========="+localLayerFolder.getAbsolutePath());
         //----------------------------------------------
@@ -1563,7 +1537,7 @@ public class MainActivity extends AppCompatActivity {
     private FileOutputStream fos = null;
     private void definedFileAndFos(String fileName){
         // 定义文件输出流
-        file = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisFile", fileName+"("+currtDateTime()+").txt");
+        file = new File(localFileFolder.getAbsolutePath(), fileName+"("+currtDateTime()+").txt");
         try {
             fos = new FileOutputStream(file, true);
         } catch (FileNotFoundException e) {
