@@ -486,8 +486,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
                     mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
-
-                    //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 }
                 break;
             case 2:
@@ -504,7 +502,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
                     mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
-                    //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 }
                 break;
             case 3://百度地图
@@ -540,7 +537,6 @@ public class MainActivity extends AppCompatActivity {
                 localLayerImgBtn.setVisibility(View.GONE);
                 btnsetlocalvalue.setVisibility(View.GONE);
                 btnsavelocalvalue.setVisibility(View.GONE);
-                distanceGraphicsLayer = null;
                 TempData.temp_graphicslayer = null;
 
                 break;
@@ -564,7 +560,6 @@ public class MainActivity extends AppCompatActivity {
                         localLayerImgBtn.setVisibility(View.VISIBLE);
                         btnsetlocalvalue.setVisibility(View.GONE);
                         btnsavelocalvalue.setVisibility(View.GONE);
-                        distanceGraphicsLayer = null;
                         TempData.temp_graphicslayer = null;
                     }
                 });
@@ -595,7 +590,6 @@ public class MainActivity extends AppCompatActivity {
                     mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
                     Log.i(TAG, "onOptionsItemSelected: ------layerNum:"+mapView.getLayers().length);
                 }
-                //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 showMessage("利用GPS点测距离");
                 break;
             case 8://GPS测面积
@@ -615,7 +609,6 @@ public class MainActivity extends AppCompatActivity {
                     mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
                     Log.i(TAG, "onOptionsItemSelected: ------layerNum:"+mapView.getLayers().length);
                 }
-                //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 showMessage("利用GPS点测面积");
                 break;
             default:
@@ -1379,7 +1372,6 @@ public class MainActivity extends AppCompatActivity {
     double totalLength=0;
     int pointNum=0;//用于控制多边形周长计算
     private int PolygonUid,PolygonLengthUid;
-    private GraphicsLayer distanceGraphicsLayer = null;
     private boolean drawcoordGeometry(Point wgspoint) {
         if(isChoose==true){
             dhdptPrevious=null;
@@ -1529,7 +1521,6 @@ public class MainActivity extends AppCompatActivity {
                 if (mapType != 1) {
                     FlagBean.scFlag = false;
                     mapView.removeLayer( TempData.arcgis_Dcgraphicslayer);
-                    distanceGraphicsLayer = null;
                     TempData.arcgis_Dcgraphicslayer = null;
                     TempData.pointList.clear();
                 } else {
