@@ -77,13 +77,24 @@
         android:layout_alignParentRight="true"
         android:onClick="arcgisZoomIn"
         tools:ignore="ContentDescription,RtlHardcoded" />
-    <RadioGroup
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/arcgis_map_zoom_in"
+        android:id="@+id/localLayerImgBtn"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/local_layer_imgbtn_selector"
+        android:onClick="localDynamicAddLayer"
+        />
+    <!--<RadioGroup
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/radioGroupLayer"
         android:layout_marginRight="15dp"
         android:layout_alignParentRight="true"
-        android:layout_above="@id/arcgis_map_zoom_in"
+        android:layout_above="@id/localLayerImgBtn"
         android:layout_marginBottom="50dp"
         >
         <RadioButton
@@ -102,11 +113,12 @@
             android:textColor="@color/red"
             />
     </RadioGroup>
+-->
     <ImageButton
         android:id="@+id/BtnSaveLocalGetvalue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/radioGroupLayer"
+        android:layout_above="@id/localLayerImgBtn"
         android:layout_marginRight="15dp"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="50dp"

@@ -144,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
     private final int INFO_SHOW_REQUEST_CODE = 0x000002;
     private String username,placeid;
     private Intent intent;
-    //private ArcGISLocalTiledLayer localTiledLayer;
     private Point wgspoint;
     private Point mapPoint;
     private LocationManager locMag;
@@ -164,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
     private GraphicsLayer GpsLayer;//用于显示GPS航迹图层
     private Point query_point = null;//用于表示从离线geodatabase中查出的点
     private String menuFlag;//用于菜单创建子菜单时的标记
-    private ArcGISLocalTiledLayer localTiledLayer=null,hbTileLayer=null,lyTileLayer=null;
+    private ArcGISLocalTiledLayer localTiledImgLayer=null,localTiledOtherLayer,hbTileLayer=null,lyTileLayer=null;
     private com.baidu.mapapi.map.MapView mapView_baidu;
     private BaiduMap baiduMap;
     private Location m_location;
@@ -178,14 +177,15 @@ public class MainActivity extends AppCompatActivity {
     private int mapType = 1;//地图类型：1---->百度地图(百度API);2---->自定义地图(arcgis API)；3---->离线地图(arcgis 加载离线地图)
     private String http_gis = "";
     private ImageButton arcgis_zoom_in, arcgis_zoom_out;
-    private RadioGroup radioGroupLayer;
-    private RadioButton radioHbLayer,radioLyLayer;
-    private ImageButton btnsavelocalvalue, btnsetlocalvalue;
+    private ImageButton btnsavelocalvalue, btnsetlocalvalue,localLayerImgBtn;
     private int NetCode = 0;
     //------------------------------------------------------
     private DrawerLayout mDrawerLayout = null;
     private DBManager dbManager;
     private Cursor bhqCursor;
+    private  File localImgFolder;//离线文件夹(存放影像图或矢量图)
+    private File localLayerFolder;//离线文件夹(存放离线图层)
+    private String localImgName;//离线影像或矢量图名称
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -199,11 +199,10 @@ public class MainActivity extends AppCompatActivity {
         arcgis_zoom_in = (ImageButton) findViewById(R.id.arcgis_map_zoom_in);
         arcgis_zoom_out = (ImageButton) findViewById(R.id.arcgis_map_zoom_out);
         //------------------
-        radioGroupLayer = (RadioGroup) findViewById(R.id.radioGroupLayer);
-        radioHbLayer = (RadioButton) findViewById(R.id.hbLayer);
-        radioLyLayer = (RadioButton) findViewById(R.id.lylayer);
+
         btnsavelocalvalue = (ImageButton) findViewById(R.id.BtnSaveLocalGetvalue);
         btnsetlocalvalue = (ImageButton) findViewById(R.id.BtnSetLocalGetvalue);
+        localLayerImgBtn = (ImageButton) findViewById(R.id.localLayerImgBtn);
         //---------------
         intent = getIntent();
         username = intent.getStringExtra("username");
@@ -211,7 +210,17 @@ public class MainActivity extends AppCompatActivity {
         TempData.username = username;
         Log.i(TAG, "onCreate:---------------用户登录ID:"+TempData.username);
         dbManager = new DBManager(context);
-
+        //---------------------------
+        localImgFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisImg");
+        localLayerFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/arcgisLayer");
+        if (!localImgFolder.exists()) {
+            localImgFolder.mkdirs();
+        }
+        if (!localLayerFolder.exists()) {
+            localLayerFolder.mkdirs();
+        }
+        Log.i(TAG, "onCreate: "+localImgFolder.getAbsolutePath()+"==========="+localLayerFolder.getAbsolutePath());
+        //----------------------------------------------
         initCustomMenu();//创建底部菜单
         if (mapType == 1) {
             LinearLayout bd_layout = (LinearLayout) getLayoutInflater().inflate(R.layout.baidu_mapview, null);
@@ -221,8 +230,7 @@ public class MainActivity extends AppCompatActivity {
             mapView = new MapView(context);
             arcgis_zoom_in.setVisibility(View.INVISIBLE);//GONE:不可见且不占用空间;INVISIBLE:不可见但是占用空间;VISIBLE:可见
             arcgis_zoom_out.setVisibility(View.INVISIBLE);
-            radioHbLayer .setVisibility(View.INVISIBLE);
-            radioLyLayer.setVisibility(View.INVISIBLE);
+            localLayerImgBtn.setVisibility(View.INVISIBLE);
             btnsetlocalvalue.setVisibility(View.GONE);
             btnsavelocalvalue.setVisibility(View.GONE);
 
@@ -425,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {//创建子菜单
                     CustomWinMenu customWinMenu = null;
                     menuFlag = jsonObject.getString("title");//当menuFlag = "样例表" 时可以动态创建所需子菜单项
-                    customWinMenu = new CustomWinMenu(MainActivity.this, jsonObject.getJSONArray("sub"), v.getWidth() + 40, 0, baiduMap, mapView, txt_pType, txt_pName, txt_showInfo, menuFlag, bhqid, bhqmc, bhqjb);
+                    customWinMenu = new CustomWinMenu(MainActivity.this, jsonObject.getJSONArray("sub"), v.getWidth() + 40, 0, baiduMap, mapView, txt_pType, txt_pName, txt_showInfo, menuFlag, bhqid, bhqmc, bhqjb,btnsavelocalvalue,btnsetlocalvalue);
                     customWinMenu.showAtLocation(v);
                 }
             } catch (JSONException e) {
@@ -473,13 +481,13 @@ public class MainActivity extends AppCompatActivity {
                 if(mapType != 1){
                     isChoose = true;
                     symbol = new SimpleLineSymbol(Color.YELLOW, 6, SimpleLineSymbol.STYLE.SOLID);
-                    if (distanceGraphicsLayer != null) {
-                        mapView.removeLayer(distanceGraphicsLayer);
+                    if (TempData.arcgis_Dcgraphicslayer != null) {
+                        mapView.removeLayer(TempData.arcgis_Dcgraphicslayer);
                     }
-                    distanceGraphicsLayer = new GraphicsLayer();
-                    mapView.addLayer(distanceGraphicsLayer);
+                    TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
+                    mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
 
-                    TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
+                    //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 }
                 break;
             case 2:
@@ -491,12 +499,12 @@ public class MainActivity extends AppCompatActivity {
                     isChoose = true;
                     fillSymbol = new SimpleFillSymbol(Color.YELLOW, SimpleFillSymbol.STYLE.SOLID);
                     fillSymbol.setAlpha(30);
-                    if (distanceGraphicsLayer != null) {
-                        mapView.removeLayer(distanceGraphicsLayer);
+                    if (TempData.arcgis_Dcgraphicslayer != null) {
+                        mapView.removeLayer(TempData.arcgis_Dcgraphicslayer);
                     }
-                    distanceGraphicsLayer = new GraphicsLayer();
-                    mapView.addLayer(distanceGraphicsLayer);
-                    TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
+                    TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
+                    mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
+                    //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 }
                 break;
             case 3://百度地图
@@ -508,8 +516,6 @@ public class MainActivity extends AppCompatActivity {
                 initBaiduView(baidu_layout);
                 arcgis_zoom_in.setVisibility(View.INVISIBLE);
                 arcgis_zoom_out.setVisibility(View.INVISIBLE);
-                radioHbLayer.setVisibility(View.INVISIBLE);
-                radioLyLayer.setVisibility(View.INVISIBLE);
                 btnsetlocalvalue.setVisibility(View.GONE);
                 btnsavelocalvalue.setVisibility(View.GONE);
                 if (null != m_location && locdisMag != null) {
@@ -531,8 +537,7 @@ public class MainActivity extends AppCompatActivity {
                 initArcgisView(arcgis_layout);
                 arcgis_zoom_in.setVisibility(View.VISIBLE);
                 arcgis_zoom_out.setVisibility(View.VISIBLE);
-                radioHbLayer.setVisibility(View.GONE);
-                radioLyLayer.setVisibility(View.GONE);
+                localLayerImgBtn.setVisibility(View.GONE);
                 btnsetlocalvalue.setVisibility(View.GONE);
                 btnsavelocalvalue.setVisibility(View.GONE);
                 distanceGraphicsLayer = null;
@@ -540,84 +545,31 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
             case 5://离线地图
-                txt_showInfo.setText("");
-                frameLayout.removeAllViews();
-                LinearLayout localLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.arcgis_mapview, null);
-                frameLayout.addView(localLayout);
-                mapType = 3;
-                initLocalArcgisView(localLayout);
-                arcgis_zoom_in.setVisibility(View.VISIBLE);
-                arcgis_zoom_out.setVisibility(View.VISIBLE);
-                radioHbLayer.setVisibility(View.VISIBLE);
-                radioLyLayer.setVisibility(View.VISIBLE);
-                btnsetlocalvalue.setVisibility(View.GONE);
-                btnsavelocalvalue.setVisibility(View.GONE);
-                TempData.temp_graphicslayer = null;
-
-
-                radioGroupLayer.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                //1.打开对话框，选择离线影像或矢量数据
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("离线数据(影像或矢量.tpk)");
+                final String[] localImgs = localImgFolder.list();
+                builder.setItems(localImgs, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-                        String msg = "";
-                        if(radioHbLayer.getId()==checkedId){
-                            msg = "当前选中的图层为:"+radioHbLayer.getText().toString();
-                            if(lyTileLayer != null){
-                                mapView.removeLayer(lyTileLayer);
-                            }
-                            hbTileLayer = new ArcGISLocalTiledLayer(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/huanbao.tpk");
-                            mapView.addLayer(hbTileLayer);
-
-                        }
-                        if(radioLyLayer.getId()==checkedId){
-                            msg = "当前选中的图层为:"+radioLyLayer.getText().toString();
-
-                            if(hbTileLayer != null){
-                                mapView.removeLayer(hbTileLayer);
-                            }
-                            lyTileLayer = new ArcGISLocalTiledLayer(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/linye.tpk");
-                            mapView.addLayer(lyTileLayer);
-
-                        }
-                        //Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_LONG).show();
+                    public void onClick(DialogInterface dialog, int which) {
+                       localImgName =  localImgs[which];
+                        txt_showInfo.setText("");
+                        frameLayout.removeAllViews();
+                        LinearLayout localLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.arcgis_mapview, null);
+                        frameLayout.addView(localLayout);
+                        mapType = 3;
+                        initLocalArcgisView(localLayout);
+                        arcgis_zoom_in.setVisibility(View.VISIBLE);
+                        arcgis_zoom_out.setVisibility(View.VISIBLE);
+                        localLayerImgBtn.setVisibility(View.VISIBLE);
+                        btnsetlocalvalue.setVisibility(View.GONE);
+                        btnsavelocalvalue.setVisibility(View.GONE);
+                        distanceGraphicsLayer = null;
+                        TempData.temp_graphicslayer = null;
                     }
                 });
-               /* //初始化弹出布局
-                LinearLayout view = (LinearLayout) getLayoutInflater().inflate(R.layout.drawlayout, null);
-                mDrawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout);
-                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);//弹出布局需要事件触发模式
-                mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
-                    *//**
-                     * 当抽屉被滑动的时候调用此方法
-                     * slideOffset 表示 滑动的幅度（0-1）
-                     *//*
-                    @Override
-                    public void onDrawerSlide(View drawerView, float slideOffset) {
+                builder.show();
 
-                    }
-
-                    //当一个抽屉被完全打开的时候被调用
-                    @Override
-                    public void onDrawerOpened(View drawerView) {
-                        mDrawerLayout.setClickable(true);//这里设置clickable(true)  必须动态设置  静态设置没有效果.解决问题:侧滑菜单出来的时候 点击菜单上的区域会有点击穿透问题
-                    }
-
-                    //当一个抽屉完全关闭的时候调用此方法
-                    @Override
-                    public void onDrawerClosed(View drawerView) {
-
-                    }
-
-                    *//*当抽屉滑动状态改变的时候被调用
-                    * 状态值是STATE_IDLE（闲置--0）, STATE_DRAGGING（拖拽的--1）, STATE_SETTLING（固定--2）中之一。
-                    * 抽屉打开的时候，点击抽屉，drawer的状态就会变成STATE_DRAGGING，然后变成STATE_IDLE
-                    *
-                    * *//*
-                    @Override
-                    public void onDrawerStateChanged(int newState) {
-
-                    }
-                });
-                mDrawerLayout.openDrawer(Gravity.RIGHT);//打开弹出布局(离线数据选择)*/
                 break;
             case 6:
                 Log.i("TAG", "保护区信息加载: ");
@@ -636,13 +588,14 @@ public class MainActivity extends AppCompatActivity {
                 if(mapType != 1){
                     isChoose = true;
                     symbol = new SimpleLineSymbol(Color.YELLOW, 20, SimpleLineSymbol.STYLE.SOLID);
-                    if (distanceGraphicsLayer != null) {
-                        mapView.removeLayer(distanceGraphicsLayer);
+                    if (TempData.arcgis_Dcgraphicslayer != null) {
+                        mapView.removeLayer(TempData.arcgis_Dcgraphicslayer);
                     }
-                    distanceGraphicsLayer = new GraphicsLayer();
-                    mapView.addLayer(distanceGraphicsLayer);
+                    TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
+                    mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
                     Log.i(TAG, "onOptionsItemSelected: ------layerNum:"+mapView.getLayers().length);
                 }
+                //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 showMessage("利用GPS点测距离");
                 break;
             case 8://GPS测面积
@@ -655,13 +608,14 @@ public class MainActivity extends AppCompatActivity {
                     isChoose = true;
                     fillSymbol = new SimpleFillSymbol(Color.YELLOW, SimpleFillSymbol.STYLE.SOLID);
                     fillSymbol.setAlpha(30);
-                    if (distanceGraphicsLayer != null) {
-                        mapView.removeLayer(distanceGraphicsLayer);
+                    if (TempData.arcgis_Dcgraphicslayer != null) {
+                        mapView.removeLayer(TempData.arcgis_Dcgraphicslayer);
                     }
-                    distanceGraphicsLayer = new GraphicsLayer();
-                    mapView.addLayer(distanceGraphicsLayer);
+                    TempData.arcgis_Dcgraphicslayer = new GraphicsLayer();
+                    mapView.addLayer(TempData.arcgis_Dcgraphicslayer);
                     Log.i(TAG, "onOptionsItemSelected: ------layerNum:"+mapView.getLayers().length);
                 }
+                //TempData.arcgis_Dcgraphicslayer = distanceGraphicsLayer;
                 showMessage("利用GPS点测面积");
                 break;
             default:
@@ -1300,7 +1254,6 @@ public class MainActivity extends AppCompatActivity {
                     //判断是否显示监测点
                     if (!txt_pName.getText().toString().trim().equals("")) {
                         findBhqhcdByBhqid(bhqid);
-
                     }
                 }
             }
@@ -1322,25 +1275,11 @@ public class MainActivity extends AppCompatActivity {
     * */
 
     private void requestLocalMapService() {
-        lyTileLayer = null;
-        hbTileLayer = null;
-        distanceGraphicsLayer = null;
-        localTiledLayer = new ArcGISLocalTiledLayer(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/shaobing.tpk");
-        Log.i(TAG, "requestLocalMapService: -------------------->localTiledlayer:"+Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/test_future.tpk");
-        mapView.addLayer(localTiledLayer);
+        localTiledImgLayer = new ArcGISLocalTiledLayer(localImgFolder.getAbsolutePath()+"/"+localImgName);
+        mapView.addLayer(localTiledImgLayer);
         if(m_location != null){
             mapView.centerAndZoom(m_location.getLatitude(),m_location.getLongitude(),13);
         }
-        Log.i(TAG, "requestLocalMapService: ------------location:"+m_location);
-        if (radioGroupLayer.getCheckedRadioButtonId() ==  radioHbLayer.getId()){
-            hbTileLayer = new ArcGISLocalTiledLayer(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/huanbao.tpk");
-            mapView.addLayer(hbTileLayer);
-        } else if(radioGroupLayer.getCheckedRadioButtonId()==radioLyLayer.getId()){
-            lyTileLayer = new ArcGISLocalTiledLayer(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisdata/linye.tpk");
-            mapView.addLayer(lyTileLayer);
-        }
-        distanceGraphicsLayer = new GraphicsLayer();
-        mapView.addLayer(distanceGraphicsLayer);
     }
     /**
      * 初始化定位方法
@@ -1458,7 +1397,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (drawType==Geometry.Type.POINT) {
             Graphic pGraphic=new Graphic(ptCurrent, symbol);
-            distanceGraphicsLayer.addGraphic(pGraphic);
+            TempData.arcgis_Dcgraphicslayer.addGraphic(pGraphic);
         }
         else {
             pointNum++;
@@ -1470,10 +1409,10 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     pgraphic=new Graphic(dhdptStart,new SimpleMarkerSymbol(Color.RED, 30, SimpleMarkerSymbol.STYLE.CIRCLE));
                 }
-                distanceGraphicsLayer.addGraphic(pgraphic);
+                TempData.arcgis_Dcgraphicslayer.addGraphic(pgraphic);
             }
             else {
-                distanceGraphicsLayer.removeGraphic(PolygonUid);
+                TempData.arcgis_Dcgraphicslayer.removeGraphic(PolygonUid);
                 Graphic pGraphic;
                 if (FlagBean.dcFlag) {
                    pGraphic=new Graphic(ptCurrent,new SimpleMarkerSymbol(Color.RED, 8, SimpleMarkerSymbol.STYLE.CIRCLE));
@@ -1481,7 +1420,7 @@ public class MainActivity extends AppCompatActivity {
                    pGraphic=new Graphic(ptCurrent,new SimpleMarkerSymbol(Color.RED, 30, SimpleMarkerSymbol.STYLE.CIRCLE));
                 }
 
-                distanceGraphicsLayer.addGraphic(pGraphic);
+                TempData.arcgis_Dcgraphicslayer.addGraphic(pGraphic);
                 Line line=new Line();
                 line.setStart(dhdptPrevious);
                 line.setEnd(ptCurrent);
@@ -1490,7 +1429,7 @@ public class MainActivity extends AppCompatActivity {
                     Polyline polyline=new Polyline();
                     polyline.addSegment(line, true);
                     Graphic iGraphicSymbol=new Graphic(polyline, symbol);
-                    distanceGraphicsLayer.addGraphic(iGraphicSymbol);
+                    TempData.arcgis_Dcgraphicslayer.addGraphic(iGraphicSymbol);
                     txt_showInfo.setText("长度:"+String.format("%.2f",line.calculateLength2D())+" (米) <======> 总长度："+String.format("%.2f",totalLength)+" 米");
 
                 }
@@ -1512,6 +1451,7 @@ public class MainActivity extends AppCompatActivity {
                     //Toast.makeText(MainActivity.this,String.format("%.2f",Math.abs(dhdpolygon.calculateArea2D()))+" m2",Toast.LENGTH_LONG).show();
                     txt_showInfo.setText("面积:"+String.format("%.2f",Math.abs(dhdpolygon.calculateArea2D()))+" (平方米)");
                     Graphic gGraphic=new Graphic(dhdpolygon, fillSymbol);
+                    PolygonUid = TempData.arcgis_Dcgraphicslayer.addGraphic(gGraphic);
                 }
             }
         }
@@ -1588,7 +1528,9 @@ public class MainActivity extends AppCompatActivity {
                 btnsavelocalvalue.setVisibility(View.GONE);
                 if (mapType != 1) {
                     FlagBean.scFlag = false;
-                    mapView.removeLayer(distanceGraphicsLayer);
+                    mapView.removeLayer( TempData.arcgis_Dcgraphicslayer);
+                    distanceGraphicsLayer = null;
+                    TempData.arcgis_Dcgraphicslayer = null;
                     TempData.pointList.clear();
                 } else {
                     baiduMap.clear();
@@ -1606,6 +1548,24 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         };
+    }
+    //------------离线地图中动态添加图层---------------------------
+    public void localDynamicAddLayer(View view){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("添加自定义图层");
+        final String[] localLayers = localLayerFolder.list();
+        builder.setItems(localLayers, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (localTiledOtherLayer != null) {
+                    mapView.removeLayer(localTiledOtherLayer);
+                }
+                localTiledOtherLayer= new ArcGISLocalTiledLayer(localLayerFolder+"/"+localLayers[which]);
+                mapView.addLayer(localTiledOtherLayer);
+                Log.i(TAG, "onClick: -----------dhd----------"+mapView.getLayers().length);
+            }
+        });
+        builder.show();
     }
     //-----------------------------------------
     private File file = null;

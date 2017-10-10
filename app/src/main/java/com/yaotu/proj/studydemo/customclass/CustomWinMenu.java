@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -52,9 +53,10 @@ public class CustomWinMenu {
     private String menu_flag;   //实现动态创建样例表菜单中子菜单
     private TextView _txt_showInfo;
     private String bhqid, bhqmc, bhqjb;
+    private ImageButton btnsavelocalvalue,btnsetlocalvalue;
 
     //private String dyna
-    public CustomWinMenu(Context _context, JSONArray _jsonArray, int _width, int _height, BaiduMap _baiduMap, com.esri.android.map.MapView mapView, TextView txt_pType, TextView txt_pName, TextView txt_showInfo, String menuFlag, String bhqid, String bhqmc, String bhqjb) {
+    public CustomWinMenu(Context _context, JSONArray _jsonArray, int _width, int _height, BaiduMap _baiduMap, com.esri.android.map.MapView mapView, TextView txt_pType, TextView txt_pName, TextView txt_showInfo, String menuFlag, String bhqid, String bhqmc, String bhqjb,ImageButton btnsavelocalvalue,ImageButton btnsetlocalvalue) {
         this.context = _context;
         this._baiduMap = _baiduMap;
         this.mapView = mapView;
@@ -68,6 +70,8 @@ public class CustomWinMenu {
         this.bhqid = bhqid;
         this.bhqmc = bhqmc;
         this.bhqjb = bhqjb;
+        this.btnsavelocalvalue = btnsavelocalvalue;
+        this.btnsetlocalvalue = btnsetlocalvalue;
         containerLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.activity_main_custommenu_item_container, null);
         try {
             setSubMenu();
@@ -283,6 +287,7 @@ public class CustomWinMenu {
             } else if (menu_value.equals(context.getString(R.string.submenu_layer))) {//清除图层
                 _baiduMap.clear();
                 if (TempData.temp_graphicslayer != null) {
+                    Log.i("TAG", "onClick: --------temp_graphicslayer-----"+mapView.getLayers().length);
                     if (mapView.getLayers().length > 2) {
                         mapView.removeLayer(TempData.temp_graphicslayer);
                         TempData.temp_graphicslayer = null;
@@ -290,6 +295,10 @@ public class CustomWinMenu {
                 }
                 if (TempData.arcgis_Dcgraphicslayer != null) {
                     TempData.arcgis_Dcgraphicslayer.removeAll();
+                    mapView.removeLayer(TempData.arcgis_Dcgraphicslayer);
+                    TempData.arcgis_Dcgraphicslayer = null;
+                    btnsavelocalvalue.setVisibility(View.INVISIBLE);
+                    btnsetlocalvalue.setVisibility(View.INVISIBLE);
                 }
                 TempData.pointList.clear();
                 TempData.placeid = "";
