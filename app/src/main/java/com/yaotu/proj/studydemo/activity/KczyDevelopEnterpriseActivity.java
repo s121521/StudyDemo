@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -28,30 +29,38 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.mapapi.ModuleName;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
 import com.google.gson.Gson;
 import com.yaotu.proj.studydemo.R;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
+import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassKczyqy;
 import com.yaotu.proj.studydemo.bean.tableBean.KczyJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.KczyRecordBean;
 import com.yaotu.proj.studydemo.bean.tableBean.kczyBean;
+import com.yaotu.proj.studydemo.common.LocalBaseInfo;
 import com.yaotu.proj.studydemo.customEnum.MapValueType;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.CustomDialog;
 import com.yaotu.proj.studydemo.customclass.DateDialog;
+import com.yaotu.proj.studydemo.customclass.HandleImage;
 import com.yaotu.proj.studydemo.customclass.InitMap;
 import com.yaotu.proj.studydemo.customclass.InsertLocalTableData;
 import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.Response;
@@ -89,7 +98,7 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
     private EditText kc_hcq_etxt;//缓冲区
     private EditText kc_hxq_etxt;//核心区
     private EditText kc_lsqk_etxt;//整改落实情况
-    private String bhqid,bhqmc,bhqjb;
+    private String bhqid,bhqmc,bhqjb,bhqjbdm;
     private TextView kc_hxq_txt,kc_hcq_txt,kc_syq_txt;
 
     private MapValueType valueType = null;
@@ -104,6 +113,10 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
     private double jcdLongitude;//监测点经度
     private double jcdlatitude;//监测点纬度
     private String jcdId;//监测点ID
+    private String activityType;
+    private NoPassKczyqy mNoPassKczyqy;
+    private String jsxmID = "0";//添加为0；更行为原有id;
+    private DBManager dbManager;
     private List<Long> times = new ArrayList<Long>();//触摸事件标志
     private ProgressDialog progressDialog;
     private final int UPLOADSUCCEED = 0X110;
@@ -114,9 +127,11 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
+                    showMessage("上传成功");
                     break;
-                case UPLOADFAIL: progressDialog.dismiss();
-
+                case UPLOADFAIL:
+                    progressDialog.dismiss();
+                    showMessage("上传失败...");
                     break;
             }
             return false;
@@ -131,16 +146,7 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        intent = getIntent();
-        bhqid = intent.getStringExtra("bhqid");
-        bhqmc = intent.getStringExtra("bhqmc");
-        bhqjb = intent.getStringExtra("bhqjb");
-        Log.i(TAG, "onCreate: -------placeid------>"+intent.getStringExtra("placeid"));
-        Log.i(TAG, "onCreate: -------longitude------>"+intent.getDoubleExtra("longitude",0));
-        Log.i(TAG, "onCreate: -------latitude------>"+intent.getDoubleExtra("latitude",0));
-        jcdId = intent.getStringExtra("placeid");
-        jcdLongitude = intent.getDoubleExtra("longitude",0);
-        jcdlatitude = intent.getDoubleExtra("latitude",0);
+
         mapLayout = (LinearLayout) findViewById(R.id.show_mapview_LinearLayout);
         mapLayout.setVisibility(View.GONE);
         initView();
@@ -191,7 +197,6 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
 
         kc_bhqmc_etxt.setText(bhqmc);
         kc_jb_etxt.setText(bhqjb);
-        kc_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
     }
     private void initMethod(){
          /*
@@ -391,7 +396,7 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
-                        intent = new Intent(Intent.ACTION_PICK);
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         startActivityForResult(intent,PICK_RESULT);
                         dialog.dismiss();
@@ -410,11 +415,14 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         switch (requestCode) {
             case PICK_RESULT:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    // Log.i("TAG", "onActivityResult: ====================>"+uri.getPath());
-                    photoPath = uri.getPath();
-                    Bitmap bitmap = PhotoImageSize.revitionImageSize(uri.getPath());
-
+                    //判断手机系统版本号
+                    if (Build.VERSION.SDK_INT > 19) {
+                        //4.4及以上系统使用这个方法处理图片
+                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
+                    }else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                    }
+                    Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     kc_photo_img.setImageBitmap(bitmap);
                     Log.i("TAG", "onActivityResult:-------相册相片路径---------> " + photoPath + "---字节数---->" + bitmap.getByteCount() + "<========>" + bitmap.getRowBytes() * bitmap.getHeight());
                 }
@@ -496,14 +504,18 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         List<KczyRecordBean> records = new ArrayList<>();
         kczyBean bean = getKczyBean();
         KczyRecordBean recordBean = new KczyRecordBean();
-        recordBean.setObjectid(TempData.placeid);
-        recordBean.setCenterpointx(TempData.longitude);
-        recordBean.setCenterpointy(TempData.latitude);
+        recordBean.setObjectid(jcdId);
+        recordBean.setCenterpointx(jcdLongitude);
+        recordBean.setCenterpointy(jcdlatitude);
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("01");
         jsonBean.setYhdh(TempData.username);
-        jsonBean.setIschecked("21");
+        if (activityType.equals("add")) {
+            jsonBean.setIschecked("21");
+        } else {
+            jsonBean.setIschecked("22");
+        }
         jsonBean.setRecord(records);
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
@@ -541,10 +553,10 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
                             if (response != null && response.code() == 200) {
                                 try {
                                     String responseValue = response.body().string();
-                                    if (responseValue.equals("success")) {
+                                    if (responseValue.contains("success")) {
                                         message.what = UPLOADSUCCEED;
                                         myHandler.sendMessage(message);
-                                    } else if (responseValue.equals("fail")) {
+                                    } else{
                                         message.what = UPLOADFAIL;
                                         myHandler.sendMessage(message);
                                     }
@@ -588,6 +600,33 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        intent = getIntent();
+        activityType = intent.getStringExtra("type");
+
+        if (activityType.equals("add")) {
+
+            bhqid = intent.getStringExtra("bhqid");
+            bhqmc = intent.getStringExtra("bhqmc");
+            bhqjb = intent.getStringExtra("bhqjb");
+            bhqjbdm = intent.getStringExtra("bhqjbdm");
+            jcdId = intent.getStringExtra("placeid");
+            jcdLongitude =intent.getDoubleExtra("longitude",0);
+            jcdlatitude =intent.getDoubleExtra("latitude",0);
+            //------------------------------
+            kc_bhqmc_etxt.setText(bhqmc);
+            kc_jb_etxt.setText(bhqjb);
+            kc_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            jsxmID = "0";
+        } else {
+            mNoPassKczyqy = (NoPassKczyqy) intent.getSerializableExtra("bdData");
+            bhqmc = intent.getStringExtra("bdBhqmc");
+            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdlatitude = intent.getDoubleExtra("bdwd", 0);
+            jcdId = intent.getStringExtra("bdobjid");
+            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            //--------------------------------------------
+            setViewData();//获取更新数据
+        }
     }
 
     @Override
@@ -612,8 +651,8 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         String ybhqwzgx =sb.toString();//与保护区位置关系
         bean.setBhqid(bhqid);
         bean.setBhqmc(bhqmc);
-        bean.setJsxmjb(kc_jb_etxt.getText().toString().trim());
-        bean.setJsxmid("0");
+        bean.setJsxmjb(bhqjbdm);//kc_jb_etxt.getText().toString().trim()
+        bean.setJsxmid(jsxmID);
         bean.setJsxmmc(kc_qymc_etxt.getText().toString().trim());
         bean.setJsxmgm(kc_gm_etxt.getText().toString().trim());
         bean.setTrzj("");
@@ -657,7 +696,6 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         bean.setPhotoPath(photoPath);
         bean.setPlaceid(jcdId);
         bean.setUsername(TempData.username);
-        //bean.setIschecked("21");
 
         return bean;
     }
@@ -699,5 +737,78 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
 
     }
+    //==============================================================================================
+    private void setViewData(){
+        if (mNoPassKczyqy != null) {
+            jsxmID = mNoPassKczyqy.getJSXMID();
+            bhqid = mNoPassKczyqy.getBHQID();
 
+            kc_bhqmc_etxt.setText(bhqmc);
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassKczyqy.getJSXMJB()==null?"":mNoPassKczyqy.getJSXMJB().toString().trim());
+            if (bhqjbB != null) {
+                kc_jb_etxt.setText(bhqjbB.getDMMC1());
+                bhqjbdm = bhqjbB.getDMZ();
+            }
+            kc_qymc_etxt.setText(mNoPassKczyqy.getJSXMMC());
+            kc_gm_etxt.setText(mNoPassKczyqy.getJSXMGM());
+            kc_fzjg_etxt.setText(mNoPassKczyqy.getFZJG());
+            if (mNoPassKczyqy.getZJYXQB() != null) {
+                kc_zjyxqb_etxt.setText(dateConversion(mNoPassKczyqy.getZJYXQB()));
+            }
+            if (mNoPassKczyqy.getZJYXQE() != null) {
+                kc_zjyxqe_etxt.setText(dateConversion(mNoPassKczyqy.getZJYXQE()));
+            }
+
+            if (kc_sjqh_radio1.getText().equals(mNoPassKczyqy.getBJBHQSJ()==null?"":mNoPassKczyqy.getBJBHQSJ().toString().trim())) {
+                kc_sjqh_radio1.setChecked(true);
+            } else if ( kc_sjqh_radio2.getText().equals(mNoPassKczyqy.getBJBHQSJ()==null?"":mNoPassKczyqy.getBJBHQSJ().toString().trim())) {
+                kc_sjqh_radio2.setChecked(true);
+            }
+            kc_kqslqk_etxt.setText(mNoPassKczyqy.getKQSLQK());
+            CodeTypeBean kcfsB = codeType("KCFS", mNoPassKczyqy.getKCFS() == null ? "" : mNoPassKczyqy.getKCFS().toString().trim());
+            if (kcfsB != null) {
+                kc_kcfs_etxt.setText(kcfsB.getDMMC1());
+                kc_kcfs_dmz.setText(kcfsB.getDMZ());
+            }
+            kc_kqsx_etxt.setText(mNoPassKczyqy.getKQSX());
+            kc_hbpfwh_etxt.setText(mNoPassKczyqy.getHBPZWH());
+            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassKczyqy.getISBHQ()==null?"":mNoPassKczyqy.getISBHQ().toString().trim());
+            if (isBhqB != null) {
+                kc_sfsbhq_etxt.setText(isBhqB.getDMMC1());
+                kc_sfsbhq_dmz.setText(isBhqB.getDMZ());
+            }
+            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassKczyqy.getISHBYS() == null ? "" :mNoPassKczyqy.getISHBYS().toString().trim());
+            if (isHbysB != null) {
+                kc_sftghbys_etxt.setText(isHbysB.getDMMC1());
+                kc_sftghbys_dmz.setText(isBhqB.getDMZ());
+            }
+            CodeTypeBean scqkB = codeType("SCQK", mNoPassKczyqy.getSCQK() == null ? "" : mNoPassKczyqy.getSCQK().toString().trim());
+            if (scqkB != null) {
+                kc_scqk_etxt.setText(scqkB.getDMMC1());
+                kc_scqk_dmz.setText(scqkB.getDMZ());
+            }
+            kc_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            kc_xmmzb_etxt.setText(mNoPassKczyqy.getMJZB());
+            kc_scmj_etxt.setText(String.valueOf(mNoPassKczyqy.getTJMJ()));
+            kc_hxq_etxt.setText(String.valueOf(mNoPassKczyqy.getHXMJ()));
+            kc_hcq_etxt.setText(String.valueOf(mNoPassKczyqy.getHCMJ()));
+            kc_syq_etxt.setText(String.valueOf(mNoPassKczyqy.getSYMJ()));
+            kc_lsqk_etxt.setText(mNoPassKczyqy.getZGCS());
+
+        }
+    }
+    private String dateConversion(String str){// /Date(1499097600000)/用Java怎么转换成yyyy-MM-dd的格式
+        str=str.replace("/Date(","").replace(")/","");
+        Date date = new Date(Long.parseLong(str));
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Log.i(TAG, "dateConversion: ---------------"+str);
+        return format.format(date);
+    }
+    private CodeTypeBean codeType(String dmlb, String dmz){
+        dbManager = new DBManager(context);
+        String sql = "select * from codeType where dmlb = ? and dmz = ?";
+        String[] bindArgs = new String[]{dmlb,dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        return list.size() == 0 ? null : list.get(0);
+    }
 }

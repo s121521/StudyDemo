@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -36,25 +37,32 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
 import com.google.gson.Gson;
 import com.yaotu.proj.studydemo.R;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
+import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPasskkhdqy;
 import com.yaotu.proj.studydemo.bean.tableBean.AssartBean;
 import com.yaotu.proj.studydemo.bean.tableBean.AssartJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.AssartRecordBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkEnterpriseBean;
+import com.yaotu.proj.studydemo.common.LocalBaseInfo;
 import com.yaotu.proj.studydemo.customEnum.MapValueType;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
+import com.yaotu.proj.studydemo.customclass.HandleImage;
 import com.yaotu.proj.studydemo.customclass.InitMap;
 import com.yaotu.proj.studydemo.customclass.InsertLocalTableData;
 import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +106,7 @@ public class AssartActivity extends AppCompatActivity {
     private Location m_location;
     private LinearLayout mapLayout;
 
-    private String bhqid,bhqmc,bhqjb;
+    private String bhqid,bhqmc,bhqjb,bhqjbdm;
     private ImageButton dot_btn,reset_btn;//地图button
     private TextView txt_showInfo;
     private  InitMap initMap;
@@ -107,20 +115,24 @@ public class AssartActivity extends AppCompatActivity {
     private double jcdLongitude;//监测点经度
     private double jcdlatitude;//监测点纬度
     private String jcdId;//监测点ID
-
+    private String activityType;
+    private NoPasskkhdqy mNoPasskkhdqy;
+    private String jsxmID = "0";//添加为0；更行为原有id;
     private ProgressDialog progressDialog;
     private final int UPLOADSUCCEED = 0X110;
     private final int UPLOADFAIL = 0X111;
+    private DBManager dbManager;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
+                    showMessage("上传成功");
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
-
+                    showMessage("上传失败...");
                     break;
             }
             return false;
@@ -132,16 +144,7 @@ public class AssartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_assart);
         mapLayout = (LinearLayout) findViewById(R.id.show_mapview_LinearLayout);
         mapLayout.setVisibility(View.GONE);
-        intent = getIntent();
-        bhqid = intent.getStringExtra("bhqid");
-        bhqmc = intent.getStringExtra("bhqmc");
-        bhqjb = intent.getStringExtra("bhqjb");
-        Log.i(TAG, "onCreate: -------placeid------>"+intent.getStringExtra("placeid"));
-        Log.i(TAG, "onCreate: -------longitude------>"+intent.getDoubleExtra("longitude",0));
-        Log.i(TAG, "onCreate: -------latitude------>"+intent.getDoubleExtra("latitude",0));
-        jcdId = intent.getStringExtra("placeid");
-        jcdLongitude =intent.getDoubleExtra("longitude",0);
-        jcdlatitude =intent.getDoubleExtra("latitude",0);
+
         initView();
         initMethod();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
@@ -183,7 +186,7 @@ public class AssartActivity extends AppCompatActivity {
         baiduMap = mapView.getMap();
         as_bhqmc_etxt.setText(bhqmc);
         as_jb_etxt.setText(bhqjb);
-        as_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+
     }
     private void initMethod(){
         /*
@@ -345,7 +348,7 @@ public class AssartActivity extends AppCompatActivity {
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
-                        intent = new Intent(Intent.ACTION_PICK);
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         startActivityForResult(intent,PICK_RESULT);
                         dialog.dismiss();
@@ -364,11 +367,14 @@ public class AssartActivity extends AppCompatActivity {
         switch (requestCode) {
             case PICK_RESULT:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    // Log.i("TAG", "onActivityResult: ====================>"+uri.getPath());
-                    photoPath = uri.getPath();
-                    Bitmap bitmap = PhotoImageSize.revitionImageSize(uri.getPath());
-
+                   //判断手机系统版本号
+                    if (Build.VERSION.SDK_INT > 19) {
+                        //4.4及以上系统使用这个方法处理图片
+                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
+                    }else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                    }
+                    Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     as_photo_img.setImageBitmap(bitmap);
                     Log.i("TAG", "onActivityResult:-------相册相片路径---------> " + photoPath );
                 }
@@ -449,13 +455,17 @@ public class AssartActivity extends AppCompatActivity {
         List<AssartRecordBean> records = new ArrayList<>();
         final AssartBean bean = getAssartBean();
         AssartRecordBean record = new AssartRecordBean();
-        record.setObjectid(TempData.placeid);
-        record.setCenterpointx(TempData.longitude);
-        record.setCenterpointy(TempData.latitude);
+        record.setObjectid(jcdId);
+        record.setCenterpointx(jcdLongitude);
+        record.setCenterpointy(jcdlatitude);
         record.setBean(bean);
         records.add(record);
         jsonBean.setKey("06");
-        jsonBean.setIschecked("21");
+        if (activityType.equals("add")) {
+            jsonBean.setIschecked("21");
+        } else {
+            jsonBean.setIschecked("22");
+        }
         jsonBean.setYhdh(TempData.username);
         jsonBean.setRecord(records);
         Gson gson = new Gson();
@@ -496,10 +506,10 @@ public class AssartActivity extends AppCompatActivity {
                             if (response != null && response.code() == 200) {
                                 try {
                                     String responseValue = response.body().string();
-                                    if (responseValue.equals("success")) {
+                                    if (responseValue.contains("success")) {
                                         message.what = UPLOADSUCCEED;
                                         myHandler.sendMessage(message);
-                                    } else if (responseValue.equals("fail")) {
+                                    } else{
                                         message.what = UPLOADFAIL;
                                         myHandler.sendMessage(message);
                                     }
@@ -550,6 +560,32 @@ public class AssartActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        intent = getIntent();
+        activityType = intent.getStringExtra("type");
+        if (activityType.equals("add")) {
+
+            bhqid = intent.getStringExtra("bhqid");
+            bhqmc = intent.getStringExtra("bhqmc");
+            bhqjb = intent.getStringExtra("bhqjb");
+            bhqjbdm = intent.getStringExtra("bhqjbdm");
+            jcdId = intent.getStringExtra("placeid");
+            jcdLongitude =intent.getDoubleExtra("longitude",0);
+            jcdlatitude =intent.getDoubleExtra("latitude",0);
+            //------------------------------
+            as_bhqmc_etxt.setText(bhqmc);
+            as_jb_etxt.setText(bhqjb);
+            as_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            jsxmID = "0";
+        } else {
+            mNoPasskkhdqy = (NoPasskkhdqy) intent.getSerializableExtra("bdData");
+            bhqmc = intent.getStringExtra("bdBhqmc");
+            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdlatitude = intent.getDoubleExtra("bdwd", 0);
+            jcdId = intent.getStringExtra("bdobjid");
+            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            //--------------------------------------------
+            setViewData();//获取更新数据
+        }
     }
 
     @Override
@@ -579,9 +615,9 @@ public class AssartActivity extends AppCompatActivity {
         String ybhqwzgx =sb.toString();//与保护区位置关系
         ab.setBhqid(bhqid);
         ab.setBhqmc(bhqmc);
-        ab.setJsxmid("0");
+        ab.setJsxmid(jsxmID);
         ab.setKkqkmc(as_kkqkmc_etxt.getText().toString().trim());
-        ab.setJsxmjb(as_jb_etxt.getText().toString().trim());
+        ab.setJsxmjb(bhqjbdm);//as_jb_etxt.getText().toString().trim()
         ab.setKkmj(as_kkmj_etxt.getText().toString().trim());
         ab.setTrzj("");
         ab.setNcz("");
@@ -660,5 +696,45 @@ public class AssartActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+    //========================================================================================
+    private void setViewData(){
+        if (mNoPasskkhdqy != null) {
+            jsxmID = mNoPasskkhdqy.getJSXMID();
+            bhqid = mNoPasskkhdqy.getBHQID();
+            as_bhqmc_etxt.setText(bhqmc);
+            as_kkqkmc_etxt.setText(mNoPasskkhdqy.getKKQKMC());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPasskkhdqy.getJSXMJB() == null ?"":mNoPasskkhdqy.getJSXMJB().toString().trim());
+            if (bhqjbB != null) {
+                as_jb_etxt.setText(bhqjbB.getDMMC1());
+                bhqjbdm = bhqjbB.getDMZ();
+            }
+            as_kkmj_etxt.setText(String.valueOf(mNoPasskkhdqy.getKKMJ()));
+            as_zwzl_etxt.setText(mNoPasskkhdqy.getZWZL());
+            as_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            as_scmj_etxt.setText(String.valueOf(mNoPasskkhdqy.getTJMJ()));
+            if (as_sjqh_radio1.getText().equals(mNoPasskkhdqy.getBJBHQSJ()==null?"":mNoPasskkhdqy.getBJBHQSJ().toString().trim())) {
+                as_sjqh_radio1.setChecked(true);
+            } else if (as_sjqh_radio2.getText().equals(mNoPasskkhdqy.getBJBHQSJ()==null?"":mNoPasskkhdqy.getBJBHQSJ().toString().trim())) {
+                as_sjqh_radio2.setChecked(true);
+            }
+            as_hxq_etxt.setText(String.valueOf(mNoPasskkhdqy.getHXMJ()));
+            as_hcq_etxt.setText(String.valueOf(mNoPasskkhdqy.getHCMJ()));
+            as_syq_etxt.setText(String.valueOf(mNoPasskkhdqy.getSYMJ()));
+            if (as_sfgz_radio1.getText().equals(mNoPasskkhdqy.getISGZ()==null?"":mNoPasskkhdqy.getISGZ().toString().trim())) {
+                as_sfgz_radio1.setChecked(true);
+            } else if (as_sfgz_radio2.getText().equals(mNoPasskkhdqy.getISGZ()==null?"":mNoPasskkhdqy.getISGZ().toString().trim())) {
+                as_sfgz_radio2.setChecked(true);
+            }
+            as_lsqk_etxt.setText(mNoPasskkhdqy.getZGCS());
+        }
+    }
+
+    private CodeTypeBean codeType(String dmlb, String dmz){
+        dbManager = new DBManager(context);
+        String sql = "select * from codeType where dmlb = ? and dmz = ?";
+        String[] bindArgs = new String[]{dmlb,dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        return list.size() == 0 ? null : list.get(0);
     }
 }

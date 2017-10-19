@@ -2,6 +2,7 @@ package com.yaotu.proj.studydemo.customclass;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -21,6 +22,7 @@ public class PhotoImageSize {
      * @throws IOException
      */
     public static Bitmap revitionImageSize(String path)  {
+        Log.i("TAG", "revitionImageSize: "+path);
         BufferedInputStream in = null;
         Bitmap bitmap = null;
         try {

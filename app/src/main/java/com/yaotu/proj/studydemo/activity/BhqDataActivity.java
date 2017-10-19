@@ -99,6 +99,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
                     intent.putExtra("bhqid",bean.getBHQID());
                     intent.putExtra("bhqmc", bean.getBHQNAME());
                     intent.putExtra("bhqjb", bean.getBHQLEVEL());
+                    intent.putExtra("bhqjbdm", bean.getBHQLEVELDM());
                     BhqDataActivity.this.setResult(2,intent);
                     BhqDataActivity.this.finish();
                 }
@@ -212,6 +213,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
             bhqinfoBean.setBHQID(bhqCursor.getString(bhqCursor.getColumnIndex("bhq_id")));
             bhqinfoBean.setBHQNAME(bhqCursor.getString(bhqCursor.getColumnIndex("bhq_name")));
             bhqinfoBean.setBHQLEVEL(bhqCursor.getString(bhqCursor.getColumnIndex("bhq_level")));
+            bhqinfoBean.setBHQLEVELDM(bhqCursor.getString(bhqCursor.getColumnIndex("bhq_level_dm")));
             list.add(bhqinfoBean);
         }
         bhqCursor.close();
@@ -222,7 +224,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         if (listResult != null) {
             int len = listResult.size();
             for (int i = 0 ; i < len ; i++) {
-                dbManager.updateBySql("insert into bhqInfo(bhq_id,bhq_name,bhq_level) values(?,?,?)",new Object[]{listResult.get(i).getBHQID(),listResult.get(i).getBHQNAME(),listResult.get(i).getBHQLEVEL()});
+                dbManager.updateBySql("insert into bhqInfo(bhq_id,bhq_name,bhq_level,bhq_level_dm) values(?,?,?,?)",new Object[]{listResult.get(i).getBHQID(),listResult.get(i).getBHQNAME(),listResult.get(i).getBHQLEVEL(),listResult.get(i).getBHQLEVELDM()});
             }
         }
     }
@@ -232,6 +234,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         if (list != null) {
             len = list.size();
             for (int i = 0; i < len; i++) {
+               // Log.i(TAG, "insertCodeTypeBySql: ---------------->dmlb:"+list.get(i).getDMLB()+"----dmmc1:"+list.get(i).getDMMC1()+"----dmz:"+list.get(i).getDMZ());
                 dbManager.updateBySql("insert into codeType(dmlb,dmz,jb,lb,dmmc1,dmmc2,dmmc3,sxh,bz) values(?,?,?,?,?,?,?,?,?)",new Object[]{list.get(i).getDMLB(),
                         list.get(i).getDMZ(),list.get(i).getJB(),list.get(i).getLB(),list.get(i).getDMMC1(),list.get(i).getDMMC2(),list.get(i).getDMMC3(),list.get(i).getSXH(),list.get(i).getBZ()});
             }

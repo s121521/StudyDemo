@@ -30,6 +30,7 @@ import com.yaotu.proj.studydemo.activity.TableOneActivity;
 import com.yaotu.proj.studydemo.activity.TableTwoActivity;
 import com.yaotu.proj.studydemo.activity.TravelDevelopEnterpriseActivity;
 import com.yaotu.proj.studydemo.bean.FlagBean;
+import com.yaotu.proj.studydemo.service.MyService;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
 
@@ -52,11 +53,11 @@ public class CustomWinMenu {
     private TextView txtview_flag, txt_pName;//标记当前地图上是否标记采集点，保存采集地样表类型
     private String menu_flag;   //实现动态创建样例表菜单中子菜单
     private TextView _txt_showInfo;
-    private String bhqid, bhqmc, bhqjb;
+    private String bhqid, bhqmc, bhqjb,bhqjbdm;
     private ImageButton btnsavelocalvalue,btnsetlocalvalue;
-
+    private Intent intentService;
     //private String dyna
-    public CustomWinMenu(Context _context, JSONArray _jsonArray, int _width, int _height, BaiduMap _baiduMap, com.esri.android.map.MapView mapView, TextView txt_pType, TextView txt_pName, TextView txt_showInfo, String menuFlag, String bhqid, String bhqmc, String bhqjb,ImageButton btnsavelocalvalue,ImageButton btnsetlocalvalue) {
+    public CustomWinMenu(Context _context, JSONArray _jsonArray, int _width, int _height, BaiduMap _baiduMap, com.esri.android.map.MapView mapView, TextView txt_pType, TextView txt_pName, TextView txt_showInfo, String menuFlag, String bhqid, String bhqmc, String bhqjb,String bhqjbdm,ImageButton btnsavelocalvalue,ImageButton btnsetlocalvalue) {
         this.context = _context;
         this._baiduMap = _baiduMap;
         this.mapView = mapView;
@@ -70,6 +71,7 @@ public class CustomWinMenu {
         this.bhqid = bhqid;
         this.bhqmc = bhqmc;
         this.bhqjb = bhqjb;
+        this.bhqjbdm = bhqjbdm;
         this.btnsavelocalvalue = btnsavelocalvalue;
         this.btnsetlocalvalue = btnsetlocalvalue;
         containerLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.activity_main_custommenu_item_container, null);
@@ -190,9 +192,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report2_name))) {//样表二
@@ -202,9 +206,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report3_name))) {//样表三
@@ -212,9 +218,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report4_name))) {//样表四
@@ -222,9 +230,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report5_name))) {
@@ -232,9 +242,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report6_name))) {
@@ -242,9 +254,11 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report7_name))) {
@@ -252,17 +266,22 @@ public class CustomWinMenu {
                 intent.putExtra("bhqid", bhqid);
                 intent.putExtra("bhqmc", bhqmc);
                 intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
                 intent.putExtra("placeid", TempData.placeid);
                 intent.putExtra("longitude", TempData.longitude);
                 intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_gps))) {//GPS航迹
 
-                FlagBean.GPSFlag = true;
-                TempData.file = FileUtils.definedFile("gps航迹");
+                //FlagBean.GPSFlag = true;
+               // TempData.file = FileUtils.definedFile("gps航迹");
                 showMessage("GPS航迹"+TempData.file);
                 Log.i("TAG", "onClick:---------gps航迹file------> "+TempData.file);
+                //intentService = new Intent(context, MyService.class);
+                //intentService.putExtra("imei", "dhd");
+                //context.startService(intentService);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_way_analyze))) {//路径分析
                 showMessage("路径分析");

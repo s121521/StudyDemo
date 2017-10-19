@@ -1,5 +1,6 @@
 package com.yaotu.proj.studydemo.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -139,9 +140,7 @@ public class MainActivity extends AppCompatActivity {
     private Overlay overlay_polygon, overlay_polyline;
     private boolean isBaiduPoint = true;
     private TextView txt_showInfo;
-    private String bhqid = "";
-    private String bhqmc = "";
-    private String bhqjb = "";
+    private String bhqid , bhqmc, bhqjb ,bhqjbdm;
     private FrameLayout frameLayout = null;
     private int mapType = 1;//地图类型：1---->百度地图(百度API);2---->自定义地图(arcgis API)；3---->离线地图(arcgis 加载离线地图)
     private String http_gis = "";
@@ -407,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {//创建子菜单
                     CustomWinMenu customWinMenu = null;
                     menuFlag = jsonObject.getString("title");//当menuFlag = "样例表" 时可以动态创建所需子菜单项
-                    customWinMenu = new CustomWinMenu(MainActivity.this, jsonObject.getJSONArray("sub"), v.getWidth() + 40, 0, baiduMap, mapView, txt_pType, txt_pName, txt_showInfo, menuFlag, bhqid, bhqmc, bhqjb,btnsavelocalvalue,btnsetlocalvalue);
+                    customWinMenu = new CustomWinMenu(MainActivity.this, jsonObject.getJSONArray("sub"), v.getWidth() + 40, 0, baiduMap, mapView, txt_pType, txt_pName, txt_showInfo, menuFlag, bhqid, bhqmc, bhqjb,bhqjbdm,btnsavelocalvalue,btnsetlocalvalue);
                     customWinMenu.showAtLocation(v);
                 }
             } catch (JSONException e) {
@@ -782,6 +781,7 @@ public class MainActivity extends AppCompatActivity {
                     bhqid = data.getString("bhqid");
                     bhqmc = data.getString("bhqmc");
                     bhqjb = data.getString("bhqjb");
+                    bhqjbdm = data.getString("bhqjbdm");
                     txt_pName.setText(bhqmc);
                    /* if (mapType == 1) {//当前由百度地图显示
                         //通过保护区ID查询出所有监测点(List<BhqHbhcBean>)
@@ -1117,6 +1117,8 @@ public class MainActivity extends AppCompatActivity {
                 case DRAW_BAIDU_MAP_POINT:
                     if (hbhc_list.size() == 0) {
                         showMessage("该保护区下没有监测点!");
+                        baiduMap.clear();
+                        txt_pName.setText("");
                     } else {
                         drawDotByParams(hbhc_list);//在地图上画出所有点信息
                     }
@@ -1155,10 +1157,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void initArcgisView(View view) {
         mapView = (MapView) view.findViewById(R.id.arcgis_mapview);  //设置mapview状态监听
+        final ProgressDialog onLineMapProgress = new ProgressDialog(context);
+        onLineMapProgress.setMessage("请等候...");
+        onLineMapProgress.show();
         mapView.setOnStatusChangedListener(new OnStatusChangedListener() {
             @Override
             public void onStatusChanged(Object o, STATUS status) {
                 if (STATUS.INITIALIZED == status) {//初始化完成
+                    onLineMapProgress.dismiss();
                     ArcGISRuntime.setClientId("9yNxBahuPiGPbsdi");//去水印
                     Log.i(TAG, "onStatusChanged: --------------arcgis view去水印");
                     //设置地图边界范围
@@ -1204,10 +1210,14 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initLocalArcgisView(View view) {
         mapView = (MapView) view.findViewById(R.id.arcgis_mapview);  //设置mapview状态监听
+        final ProgressDialog offLineMapProgress = new ProgressDialog(context);
+        offLineMapProgress.setMessage("请等候...");
+        offLineMapProgress.show();
         mapView.setOnStatusChangedListener(new OnStatusChangedListener() {
             @Override
             public void onStatusChanged(Object o, STATUS status) {
                 if (STATUS.INITIALIZED == status) {//初始化完成
+                    offLineMapProgress.dismiss();
                     ArcGISRuntime.setClientId("9yNxBahuPiGPbsdi");//去水印
                     Log.i(TAG, "onStatusChanged: --------------arcgis view去水印");
                     //设置地图边界范围

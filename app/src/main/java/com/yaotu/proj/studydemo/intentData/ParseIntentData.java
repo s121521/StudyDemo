@@ -54,6 +54,7 @@ public class ParseIntentData {
         return response;
     }
 
+
     /*以JSON格式传递参数 */
     public static Response getDataPostByJson(String url, String jsonStr) {
         OkHttpClient client = new OkHttpClient();

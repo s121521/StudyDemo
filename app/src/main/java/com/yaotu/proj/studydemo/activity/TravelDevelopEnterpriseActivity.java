@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -34,18 +35,23 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
 import com.google.gson.Gson;
 import com.yaotu.proj.studydemo.R;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
+import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassTravelqy;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelRecordBean;
+import com.yaotu.proj.studydemo.common.LocalBaseInfo;
 import com.yaotu.proj.studydemo.customEnum.MapValueType;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.CustomDialog;
+import com.yaotu.proj.studydemo.customclass.HandleImage;
 import com.yaotu.proj.studydemo.customclass.InitMap;
 import com.yaotu.proj.studydemo.customclass.InsertLocalTableData;
 import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
 
 import java.io.File;
@@ -88,7 +94,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
     private EditText tr_hxq_etxt;//核心区
     private EditText tr_lsqk_etxt;//整改落实情况
     private TextView tr_hxq_txt,tr_hcq_txt,tr_syq_txt;
-    private String bhqid, bhqmc, bhqjb;
+    private String bhqid, bhqmc, bhqjb,bhqjbdm;
 
     private MapValueType valueType = null;
     private LinearLayout mapLayout;
@@ -101,6 +107,10 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
     private double jcdLongitude;//监测点经度
     private double jcdlatitude;//监测点纬度
     private String jcdId;//监测点ID
+    private String activityType;
+    private NoPassTravelqy mNoPassTravelqy;
+    private String jsxmID = "0";//添加为0；更行为原有id;
+    private DBManager dbManager;
     private InitMap initMap;
     private List<Long> times = new ArrayList<Long>();//触摸事件标志
     private ProgressDialog progressDialog;
@@ -112,10 +122,11 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
+                    showMessage("上传成功");
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
-
+                    showMessage("上传失败...");
                     break;
             }
             return false;
@@ -131,16 +142,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        intent = getIntent();
-        bhqid = intent.getStringExtra("bhqid");
-        bhqmc = intent.getStringExtra("bhqmc");
-        bhqjb = intent.getStringExtra("bhqjb");
-        Log.i(TAG, "onCreate: -------placeid------>"+intent.getStringExtra("placeid"));
-        Log.i(TAG, "onCreate: -------longitude------>"+intent.getDoubleExtra("longitude",0));
-        Log.i(TAG, "onCreate: -------latitude------>"+intent.getDoubleExtra("latitude",0));
-        jcdId = intent.getStringExtra("placeid");
-        jcdLongitude = intent.getDoubleExtra("longitude",0);
-        jcdlatitude = intent.getDoubleExtra("latitude",0);
+
         mapLayout = (LinearLayout) findViewById(R.id.show_mapview_LinearLayout);
         mapLayout.setVisibility(View.GONE);
         initView();
@@ -187,7 +189,6 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
 
         tr_bhqmc_etxt.setText(bhqmc);
         tr_jb_etxt.setText(bhqjb);
-        tr_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
     }
 
     private void initMethod() {
@@ -380,7 +381,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
-                        intent = new Intent(Intent.ACTION_PICK);
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         startActivityForResult(intent, PICK_RESULT);
                         dialog.dismiss();
@@ -400,10 +401,14 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         switch (requestCode) {
             case PICK_RESULT:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    // Log.i("TAG", "onActivityResult: ====================>"+uri.getPath());
-                    photoPath = uri.getPath();
-                    Bitmap bitmap = PhotoImageSize.revitionImageSize(uri.getPath());
+                    //判断手机系统版本号
+                    if (Build.VERSION.SDK_INT > 19) {
+                        //4.4及以上系统使用这个方法处理图片
+                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
+                    }else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                    }
+                    Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
 
                     tr_photo_img.setImageBitmap(bitmap);
                     Log.i("TAG", "onActivityResult:-------相册相片路径---------> " + photoPath + "---字节数---->" + bitmap.getByteCount() + "<========>" + bitmap.getRowBytes() * bitmap.getHeight());
@@ -488,14 +493,18 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         List<TravelRecordBean> records = new ArrayList<>();
         TravelBean bean = getTravelBean();
         TravelRecordBean recordBean = new TravelRecordBean();
-        recordBean.setObjectid(TempData.placeid);
-        recordBean.setCenterpointx(TempData.longitude);
-        recordBean.setCenterpointy(TempData.latitude);
+        recordBean.setObjectid(jcdId);
+        recordBean.setCenterpointx(jcdLongitude);
+        recordBean.setCenterpointy(jcdlatitude);
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("04");
         jsonBean.setYhdh(TempData.username);
-        jsonBean.setIschecked("21");
+        if (activityType.equals("add")) {
+            jsonBean.setIschecked("21");
+        } else {
+            jsonBean.setIschecked("22");
+        }
         jsonBean.setRecord(records);
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
@@ -532,10 +541,10 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
                         if (response != null && response.code() == 200) {
                             try {
                                 String responseValue = response.body().string();
-                                if (responseValue.equals("success")) {
+                                if (responseValue.contains("success")) {
                                     message.what = UPLOADSUCCEED;
                                     myHandler.sendMessage(message);
-                                } else if (responseValue.equals("fail")) {
+                                } else{
                                     message.what = UPLOADFAIL;
                                     myHandler.sendMessage(message);
                                 }
@@ -582,6 +591,32 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        intent = getIntent();
+
+        activityType = intent.getStringExtra("type");
+        if (activityType.equals("add")) {
+            bhqid = intent.getStringExtra("bhqid");
+            bhqmc = intent.getStringExtra("bhqmc");
+            bhqjb = intent.getStringExtra("bhqjb");
+            bhqjbdm = intent.getStringExtra("bhqjbdm");
+            jcdId = intent.getStringExtra("placeid");
+            jcdLongitude =intent.getDoubleExtra("longitude",0) ;
+            jcdlatitude = intent.getDoubleExtra("latitude",0);
+            //------------------------------
+            tr_bhqmc_etxt.setText(bhqmc);
+            tr_jb_etxt.setText(bhqjb);
+            tr_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            jsxmID = "0";
+        } else {
+            mNoPassTravelqy = (NoPassTravelqy) intent.getSerializableExtra("bdData");
+            bhqmc = intent.getStringExtra("bdBhqmc");
+            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdlatitude = intent.getDoubleExtra("bdwd", 0);
+            jcdId = intent.getStringExtra("bdobjid");
+            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            //--------------------------------------------
+            setViewData();//获取更新数据
+        }
     }
 
     @Override
@@ -606,9 +641,9 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         String ybhqwzgx =sb.toString();//与保护区位置关系
         bean.setBhqid(bhqid);
         bean.setBhqmc(bhqmc);
-        bean.setJsxmid("0");
+        bean.setJsxmid(jsxmID);
         bean.setJsxmmc(tr_qymc_etxt.getText().toString().trim());
-        bean.setJsxmjb(bhqjb);
+        bean.setJsxmjb(bhqjbdm);
         bean.setJsxmgm(tr_gm_etxt.getText().toString().trim());
         bean.setTrzj("");
         bean.setNcz("");
@@ -645,7 +680,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
 
         bean.setPhotoPath(photoPath);
         bean.setPlaceid(jcdId);
-        //bean.setIschecked("21");
+       // bean.setIschecked("21");
         bean.setUsername(TempData.username);
         return bean;
     }
@@ -688,5 +723,60 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    //=============================================================================================
+    private void setViewData(){
+        if (mNoPassTravelqy != null) {
+            bhqid = mNoPassTravelqy.getBHQID();
+            jsxmID = mNoPassTravelqy.getJSXMID();
+            tr_bhqmc_etxt.setText(bhqmc);
+            tr_qymc_etxt.setText(mNoPassTravelqy.getJSXMMC());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassTravelqy.getJSXMJB()==null?"":mNoPassTravelqy.getJSXMJB().toString().trim());
+            if (bhqjbB != null) {
+                tr_jb_etxt.setText(bhqjbB.getDMMC1());
+                bhqjbdm = bhqjbB.getDMZ();
+            }
+            tr_gm_etxt.setText(mNoPassTravelqy.getJSXMGM());
+            if (tr_sjqh_radio1.getText().equals(mNoPassTravelqy.getBJBHQSJ()==null?"":mNoPassTravelqy.getBJBHQSJ().toString().trim())) {
+                tr_sjqh_radio1.setChecked(true);
+            } else if (tr_sjqh_radio2.getText().equals(mNoPassTravelqy.getBJBHQSJ()==null?"":mNoPassTravelqy.getBJBHQSJ().toString().trim())) {
+                tr_sjqh_radio2.setChecked(true);
+            }
+            tr_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            tr_xmmzb_etxt.setText(mNoPassTravelqy.getMJZB());
+            tr_scmj_etxt.setText(String.valueOf(mNoPassTravelqy.getTJMJ()));
+            tr_kqslqk_etxt.setText(mNoPassTravelqy.getLSYG());
+            CodeTypeBean qysxB = codeType("QYSX",mNoPassTravelqy.getQYSX()==null?"":mNoPassTravelqy.getQYSX().toString().trim());
+            if (qysxB != null) {
+                tr_qysx_etxt.setText(qysxB.getDMMC1());
+                tr_qysx_dmz.setText(qysxB.getDMZ());
+            }
+            tr_hbpfwh_etxt.setText(mNoPassTravelqy.getHBPZWH());
+            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassTravelqy.getISBHQ()==null?"":mNoPassTravelqy.getISBHQ().toString().trim());
+            if (isBhqB != null) {
+                tr_sfsbhq_etxt.setText(isBhqB.getDMMC1());
+                tr_sfsbhq_dmz.setText(isBhqB.getDMZ());
+            }
+            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassTravelqy.getISHBYS()==null?"":mNoPassTravelqy.getISHBYS().toString().trim());
+            if (isHbysB != null) {
+                tr_sftghbys_etxt.setText(isHbysB.getDMMC1());
+                tr_sftghbys_dmz.setText(isHbysB.getDMZ());
+            }
+            CodeTypeBean yxqkB = codeType("SCQK", mNoPassTravelqy.getYYQK()==null?"":mNoPassTravelqy.getYYQK().toString().trim());
+            if (yxqkB != null) {
+                tr_yyqk_etxt.setText(yxqkB.getDMMC1());
+                tr_yyqk_dmz.setText(yxqkB.getDMZ());
+            }
+            tr_syq_etxt.setText(String.valueOf(mNoPassTravelqy.getSYMJ()));
+            tr_hcq_etxt.setText(String.valueOf(mNoPassTravelqy.getHCMJ()));
+            tr_hxq_etxt.setText(String.valueOf(mNoPassTravelqy.getHXMJ()));
+            tr_lsqk_etxt.setText(String.valueOf(mNoPassTravelqy.getZGCS()));
+        }
+    }
+    private CodeTypeBean codeType(String dmlb, String dmz){
+        dbManager = new DBManager(context);
+        String sql = "select * from codeType where dmlb = ? and dmz = ?";
+        String[] bindArgs = new String[]{dmlb,dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        return list.size() == 0 ? null : list.get(0);
+    }
 }

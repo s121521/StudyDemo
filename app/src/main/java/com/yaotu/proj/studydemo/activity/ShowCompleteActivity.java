@@ -263,7 +263,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         /*进行修改*/
-                        updateLocalData(listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getBhqmc(), "0");
+                        updateLocalData(listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getBhqmc(), listQyInfo.get(position).getPlaceid());
                         dialog.dismiss();
                     }
                 });
@@ -440,7 +440,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
     //=================================删除表中数据=======================================================
     private void removeMethod(int position) {
         if (qyTypeStr.equals("探矿企业")) {
-            boolean reault = removeSqliteData("TkqyInfo", "bhqid = ? and jsxmmc = ?  and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean reault = removeSqliteData("TkqyInfo", "bhqid = ? and placeid = ?  and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (reault) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -453,7 +453,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
                 showMessage("删除失败...");
             }
         } else if (qyTypeStr.equals("工业企业")) {
-            boolean result = removeSqliteData("GyqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("GyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -467,7 +467,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("矿产资源开发企业")) {
-            boolean result = removeSqliteData("KczyqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("KczyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -481,7 +481,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("旅游资源开发企业")) {
-            boolean result = removeSqliteData("TravelqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("TravelqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -495,7 +495,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("新能源项目")) {
-            boolean result = removeSqliteData("NewEnergyqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("NewEnergyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -509,7 +509,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("开垦活动")) {
-            boolean result = removeSqliteData("AssartqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("AssartqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -523,7 +523,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("其他开发建设活动")) {
-            boolean result = removeSqliteData("DevelopqyInfo", "bhqid = ? and jsxmmc = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getQymc(), TempData.username});
+            boolean result = removeSqliteData("DevelopqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -595,7 +595,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             TKJsonBean jsonbean = new TKJsonBean();
             jsonbean.setKey("02");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -617,7 +621,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             IndustryJsonBean jsonbean = new IndustryJsonBean();
             jsonbean.setKey("03");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -638,7 +646,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             KczyJsonBean jsonbean = new KczyJsonBean();
             jsonbean.setKey("01");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -659,7 +671,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             TravelJsonBean jsonbean = new TravelJsonBean();
             jsonbean.setKey("04");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -680,7 +696,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             NewEnergyJsonBean jsonbean = new NewEnergyJsonBean();
             jsonbean.setKey("05");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -701,7 +721,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             AssartJsonBean jsonbean = new AssartJsonBean();
             jsonbean.setKey("06");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -722,7 +746,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
             DevelopConstructionJsonBean jsonbean = new DevelopConstructionJsonBean();
             jsonbean.setKey("07");
             jsonbean.setYhdh(TempData.username);
-            jsonbean.setIschecked("21");
+            if (bean.getJsxmid().equals("0")) {
+                jsonbean.setIschecked("21");
+            } else {
+                jsonbean.setIschecked("22");
+            }
             jsonbean.setRecord(Records);
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
@@ -756,7 +784,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
                 if (response != null && response.code() == 200) {//判断是否有返回结果，有结果则结束线程
                     try {
                         String value = response.body().string();
-                        if (value.equals("success")) {
+                        if (value.contains("success")) {
                             message.what = UPLOADSUCCEED;
                             myHandler.sendMessage(message);
                         } else {

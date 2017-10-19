@@ -1,19 +1,26 @@
 package com.yaotu.proj.studydemo.activity;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -53,13 +60,17 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.SpatialReference;
 import com.google.gson.Gson;
 import com.yaotu.proj.studydemo.R;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
+import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassTkqy;
 import com.yaotu.proj.studydemo.bean.tableBean.TKJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkEnterpriseBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkRecord;
+import com.yaotu.proj.studydemo.common.LocalBaseInfo;
 import com.yaotu.proj.studydemo.customEnum.MapValueType;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.DateDialog;
 import com.yaotu.proj.studydemo.customclass.CustomDialog;
+import com.yaotu.proj.studydemo.customclass.HandleImage;
 import com.yaotu.proj.studydemo.customclass.InsertLocalTableData;
 import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
@@ -73,7 +84,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.Response;
@@ -121,11 +134,18 @@ public class TKEnterpriseActivity extends AppCompatActivity {
     private TextView txt_showInfo;
     private ImageView tk_photo_img;
     private TextView tk_canleImage;
-    private String bhqid, bhqmc, bhqjb;
+    private String bhqid, bhqmc, bhqjb,bhqjbdm;
     private Intent intent;
     private ImageButton dot_btn, reset_btn;//地图button
     private List<Long> times = new ArrayList<Long>();//触摸事件标志
     private ProgressDialog progressDialog;
+    private String activityType;//用来编辑当前activity添加新数据或更新数据
+    private NoPassTkqy noPassTkqy;
+    private double jcdLongitude;//监测点经度
+    private double jcdlatitude;//监测点纬度
+    private String jcdId;//监测点ID
+    private DBManager dbManager;
+    private String jsxmID = "0";//添加为0；更行为原有id;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -155,13 +175,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         }
         mapLayout = (LinearLayout) findViewById(R.id.show_mapview_LinearLayout);
         mapLayout.setVisibility(View.GONE);
-        intent = getIntent();
-        bhqid = intent.getStringExtra("bhqid");
-        bhqmc = intent.getStringExtra("bhqmc");
-        bhqjb = intent.getStringExtra("bhqjb");
-        Log.i(TAG, "onCreate: -------placeid------>"+intent.getStringExtra("placeid"));
-        Log.i(TAG, "onCreate: -------longitude------>"+intent.getDoubleExtra("longitude",0));
-        Log.i(TAG, "onCreate: -------latitude------>"+intent.getDoubleExtra("latitude",0));
+
         initView();//初始化页面需要的基本view
         initMethod();//定义基本元素事件
         IPURL = getResources().getString(R.string.http_url);//服务器IP地址
@@ -184,8 +198,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         tk_canleImage = (TextView) findViewById(R.id.tkcanleImage);
         tk_bhqmc_etxt = (EditText) findViewById(R.id.tk_bhqmc_etxt);
         tk_jb_etxt = (EditText) findViewById(R.id.tk_jb_etxt);
-        tk_bhqmc_etxt.setText(bhqmc);
-        tk_jb_etxt.setText(bhqjb);
+
         tk_qymc_etxt = (EditText) findViewById(R.id.tk_qymc_etxt);
         tk_fzjg_etxt = (EditText) findViewById(R.id.tk_fzjg_etxt);
         tk_sjqhGroup_radio = (RadioGroup) findViewById(R.id.tk_sjqhGroup_radio);
@@ -202,12 +215,10 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         tk_hcq_etxt = (EditText) findViewById(R.id.tk_hcq_etxt);
         tk_hxq_etxt = (EditText) findViewById(R.id.tk_hxq_etxt);
         tk_lsqk_etxt = (EditText) findViewById(R.id.tk_lsqk_etxt);
-
         tk_hxq_txt = (TextView) findViewById(R.id.tk_hxq_txt);
         tk_hcq_txt = (TextView) findViewById(R.id.tk_hcq_txt);
         tk_syq_txt = (TextView) findViewById(R.id.tk_syq_txt);
 
-        tk_ktzxzb_etxt.setText(TempData.longitude+","+TempData.latitude);
     }
 
     private void initMethod() {
@@ -563,7 +574,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
-                        intent = new Intent(Intent.ACTION_PICK);
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         startActivityForResult(intent, PICK_RESULT);
                         dialog.dismiss();
@@ -577,17 +588,23 @@ public class TKEnterpriseActivity extends AppCompatActivity {
 
     private String photoPath = "";
 
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case PICK_RESULT:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    // Log.i("TAG", "onActivityResult: ====================>"+uri.getPath());
-                    photoPath = uri.getPath();
-                    Bitmap bitmap = PhotoImageSize.revitionImageSize(uri.getPath());
-
+                    //判断手机系统版本号
+                    if (Build.VERSION.SDK_INT > 19) {
+                        //4.4及以上系统使用这个方法处理图片
+                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
+                    }else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                    }
+                    Log.i("TAG", "onActivityResult: ====================>"+photoPath);
+                    Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     tk_photo_img.setImageBitmap(bitmap);
                     if(bitmap!=null){
                         Log.i("TAG", "onActivityResult:-------相册相片路径---------> " + photoPath + "---字节数---->" + bitmap.getByteCount() + "<========>" + bitmap.getRowBytes() * bitmap.getHeight());
@@ -605,18 +622,20 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                 Bitmap bitmap = (Bitmap) bundle.get("data");
                 File file = FileUtils.saveBitmap(bitmap, fileName);
                 photoPath = file.getAbsolutePath();
-                //Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
+                Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 tk_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
                 Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + "pic_" + fileName + ".jpg"));
                 intent.setData(uri);
                 context.sendBroadcast(intent);
+
                 break;
             default:
                 break;
         }
     }
+
 
     //============================提交/保存========================================================
     public void submitBtnMethod(View view) {
@@ -675,15 +694,19 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         List<TkRecord> Record = new ArrayList<>();
         TkEnterpriseBean tb = getTkEnterpriseBean();
         TkRecord recordBean = new TkRecord();
-        recordBean.setObjectid(TempData.placeid);
-        recordBean.setCenterpointx(TempData.longitude);
-        recordBean.setCenterpointy(TempData.latitude);
+        recordBean.setObjectid(jcdId);
+        recordBean.setCenterpointx(jcdLongitude);
+        recordBean.setCenterpointy(jcdlatitude);
         recordBean.setBean(tb);
         Record.add(recordBean);
         TKJsonBean tkJsonBean = new TKJsonBean();
         tkJsonBean.setKey("02");
         tkJsonBean.setYhdh(TempData.username);
-        tkJsonBean.setIschecked("21");
+        if (activityType.equals("add")) {
+            tkJsonBean.setIschecked("21");
+        } else {
+            tkJsonBean.setIschecked("22");
+        }
         tkJsonBean.setRecord(Record);
 
         Gson gson = new Gson();
@@ -724,19 +747,20 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                         if (response != null && response.code() == 200) {
                             try {
                                 String resultValue = response.body().string();
-                                Log.i(TAG, "onClick: --------------上传数据返回值------>" + resultValue);
-                                if (resultValue.equals("succeed")) {//上传成功
-                                    message.what = UPLOADSUCCEED;
-                                    myHandler.sendMessage(message);
-                                } else if (resultValue.equals("fail")) {//上传失败
-                                    message.what = UPLOADFAIL;
-                                    myHandler.sendMessage(message);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                            Log.i(TAG, "onClick: --------------上传数据返回值------>" + resultValue);
+                            if (resultValue.contains("success")) {//上传成功
+                                message.what = UPLOADSUCCEED;
+                                myHandler.sendMessage(message);
+                            } else{//上传失败
+                                message.what = UPLOADFAIL;
+                                myHandler.sendMessage(message);
                             }
-                            threadFlag = false;
-                        } else {
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            response.close();
+                        }
+                        threadFlag = false;
+                    } else {
                             message.what = UPLOADFAIL;
                             myHandler.sendMessage(message);
                             threadFlag = false;
@@ -768,6 +792,31 @@ public class TKEnterpriseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        intent = getIntent();
+        activityType = intent.getStringExtra("type");
+        if (activityType.equals("add")) {
+            bhqid = intent.getStringExtra("bhqid");
+            bhqmc = intent.getStringExtra("bhqmc");
+            bhqjb = intent.getStringExtra("bhqjb");
+            bhqjbdm = intent.getStringExtra("bhqjbdm");
+            jcdId = intent.getStringExtra("placeid");
+            jcdLongitude = intent.getDoubleExtra("longitude", 0);
+            jcdlatitude = intent.getDoubleExtra("latitude", 0);
+            //------------------------------
+            tk_bhqmc_etxt.setText(bhqmc);
+            tk_jb_etxt.setText(bhqjb);
+            tk_ktzxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            jsxmID = "0";
+        } else {
+            noPassTkqy = (NoPassTkqy) intent.getSerializableExtra("bdData");
+            bhqmc = intent.getStringExtra("bdBhqmc");
+            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdlatitude = intent.getDoubleExtra("bdwd", 0);
+            jcdId =intent.getStringExtra("bdobjid");
+            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            //--------------------------------------------
+            setViewData();//获取更新数据
+        }
     }
 
     @Override
@@ -779,6 +828,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
+
     }
 
     private void showMessage(String msg) {
@@ -800,8 +850,8 @@ public class TKEnterpriseActivity extends AppCompatActivity {
             sb.append(tk_syq_txt.getText().toString().trim() + ":" + tk_syq_etxt.getText().toString().trim());
         }
         String ybhqwzgx = sb.toString();//与保护区位置关系
-        tb.setJsxmid("0");
-        tb.setJsxmjb(tk_jb_etxt.getText().toString().trim());
+        tb.setJsxmid(jsxmID);
+        tb.setJsxmjb(bhqjbdm);//tk_jb_etxt.getText().toString().trim()
         tb.setJsxmmc(tk_qymc_etxt.getText().toString().trim());
         tb.setBhqid(bhqid);
         tb.setTrzj("");
@@ -840,9 +890,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
 
         tb.setVkqsx(tk_kqsx_etxt.getText().toString().trim());
         tb.setUsername(TempData.username);
-       // tb.setUsertel(TempData.usertel);
-        tb.setPlaceid(TempData.placeid);
-
+        tb.setPlaceid(jcdId);
         tb.setPhotoPath(photoPath);
         tb.setBhqmc(bhqmc);
         return tb;
@@ -860,8 +908,10 @@ public class TKEnterpriseActivity extends AppCompatActivity {
     //-----------------查询本地数据库是否已经存在该企业名称--------------------------------
     private boolean IsExist(TkEnterpriseBean bean){
         QueryLocalTableData query = new QueryLocalTableData(context);
-        String sql ="select * from TkqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
-        String[] strs = new String[]{bean.getBhqid(),bean.getJsxmmc(),bean.getUsername()};
+        //String sql ="select * from TkqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
+        //String[] strs = new String[]{bean.getBhqid(),bean.getJsxmmc(),bean.getUsername()};
+        String sql ="select * from TkqyInfo where bhqid = ? and placeid= ? and username = ?";
+        String[] strs = new String[]{bean.getBhqid(),bean.getPlaceid(),bean.getUsername()};
         List<TkEnterpriseBean> list = query.queryTkqyInfos(sql,strs);
         if (list != null) {
             if (list.size() >0) {
@@ -882,5 +932,70 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    //=============================================================================================
 
+    private void setViewData(){
+        if (noPassTkqy != null) {
+            Log.i(TAG, "setViewData: -------------------------------"+bhqmc);
+            jsxmID = noPassTkqy.getJSXMID();
+            bhqid = noPassTkqy.getBHQID();
+            tk_bhqmc_etxt.setText(bhqmc);
+            CodeTypeBean bhqjbB = codeType("BHQJB", noPassTkqy.getJSXMJB()==null?"":noPassTkqy.getJSXMJB().toString().trim());
+            Log.i(TAG, "setViewData: ===========bhqjb:"+noPassTkqy.getJSXMJB());
+            if (bhqjbB != null) {
+                tk_jb_etxt.setText(bhqjbB.getDMMC1());
+                bhqjbdm = bhqjbB.getDMZ();
+            }
+            tk_qymc_etxt.setText(noPassTkqy.getJSXMMC());
+            tk_fzjg_etxt.setText(noPassTkqy.getFZJG());
+            if (noPassTkqy.getZJYXQB() != null) {
+                tk_zjyxqb_etxt.setText(dateConversion(noPassTkqy.getZJYXQB()));
+            }
+            if (noPassTkqy.getZJYXQE() !=null) {
+                tk_zjyxqe_etxt.setText(dateConversion(noPassTkqy.getZJYXQE()));
+            }
+            tk_ktzxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            tk_ktxmmzb_etxt.setText(noPassTkqy.getMJZB());
+            tk_scmj_etxt.setText(String.valueOf(noPassTkqy.getTJMJ()));
+            if (tk_sjqh_radio1.getText().equals(noPassTkqy.getBJBHQSJ()==null?"":noPassTkqy.getBJBHQSJ().toString().trim())) {
+                tk_sjqh_radio1.setChecked(true);
+            } else if (tk_sjqh_radio2.getText().equals(noPassTkqy.getBJBHQSJ()==null?"":noPassTkqy.getBJBHQSJ().toString().trim())) {
+                tk_sjqh_radio2.setChecked(true);
+            }
+            tk_kqslqk_etxt.setText(noPassTkqy.getKQSLQK());
+            tk_ktfs_etxt.setText(noPassTkqy.getKTFS());
+            CodeTypeBean kqsxB= codeType("KQSX",noPassTkqy.getKQSX()==null?"":noPassTkqy.getKQSX().toString().trim());
+            if (kqsxB != null) {
+                tk_kqsx_etxt.setText(kqsxB.getDMMC1());
+                tk_kqsx_dmz.setText(kqsxB.getDMZ());
+            }
+            tk_hbpfwh_etxt.setText(noPassTkqy.getHBPZWH());
+            CodeTypeBean isbhqB = codeType("ISBHQ", noPassTkqy.getISBHQ()==null?"":noPassTkqy.getISBHQ().toString().trim());
+            if (isbhqB != null) {
+                tk_sfsbhq_etxt.setText(isbhqB.getDMMC1());
+                tk_sfsbhq_dmz.setText(isbhqB.getDMZ());
+            }
+            tk_ktscqk_etxt.setText(noPassTkqy.getSCQK());
+            tk_syq_etxt.setText(String.valueOf(noPassTkqy.getSYMJ()));
+            tk_hcq_etxt.setText(String.valueOf(noPassTkqy.getHCMJ()));
+            tk_hxq_etxt.setText(String.valueOf(noPassTkqy.getHXMJ()));
+            tk_lsqk_etxt.setText(noPassTkqy.getZGCS());
+
+        }
+
+    }
+    private String dateConversion(String str){// /Date(1499097600000)/用Java怎么转换成yyyy-MM-dd的格式
+        str=str.replace("/Date(","").replace(")/","");
+        Date date = new Date(Long.parseLong(str));
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Log.i(TAG, "dateConversion: ---------------"+str);
+        return format.format(date);
+    }
+    private  CodeTypeBean codeType(String dmlb,String dmz){
+        dbManager = new DBManager(context);
+        String sql = "select * from codeType where dmlb = ? and dmz = ?";
+        String[] bindArgs = new String[]{dmlb,dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+       return list.size() == 0 ? null : list.get(0);
+    }
 }

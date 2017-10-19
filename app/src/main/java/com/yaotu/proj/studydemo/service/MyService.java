@@ -69,7 +69,7 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        stopTrace();
     }
 
     /**
@@ -99,6 +99,7 @@ public class MyService extends Service {
     private void startTrace() {
         // 通过轨迹服务客户端client开启轨迹服务
         mTraceClient.startTrace(mTrace, null);
+        mTraceClient.startGather(null);
     }
 
     // 停止轨迹服务

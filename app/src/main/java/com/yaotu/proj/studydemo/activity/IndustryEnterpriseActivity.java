@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -33,20 +34,26 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
+import com.esri.core.geometry.AngularUnit;
 import com.google.gson.Gson;
 import com.yaotu.proj.studydemo.R;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
+import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassGyqy;
 import com.yaotu.proj.studydemo.bean.tableBean.IndustryBean;
 import com.yaotu.proj.studydemo.bean.tableBean.IndustryJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.IndustryRecordBean;
+import com.yaotu.proj.studydemo.common.LocalBaseInfo;
 import com.yaotu.proj.studydemo.customEnum.MapValueType;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.CustomDialog;
+import com.yaotu.proj.studydemo.customclass.HandleImage;
 import com.yaotu.proj.studydemo.customclass.InitMap;
 import com.yaotu.proj.studydemo.customclass.InsertLocalTableData;
 import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
 
 import org.json.JSONException;
@@ -90,9 +97,9 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private TextView in_syq_txt,in_hcq_txt,in_hxq_txt;
     private TextView in_canleImage;
     private ImageView in_photo_img;
-    private String bhqid,bhqmc,bhqjb;
+    private String bhqid,bhqmc,bhqjb,bhqjbdm;
     private Intent intent;
-
+    private DBManager dbManager;
     private MapValueType valueType = null;
     private LinearLayout mapLayout;
     private MapView mapView;
@@ -106,6 +113,9 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private double jcdLongitude;//监测点经度
     private double jcdlatitude;//监测点纬度
     private String jcdId;//监测点ID
+    private String activityType;
+    private NoPassGyqy mNoPassGyqy;
+    private String jsxmID = "0";//添加为0；更行为原有id;
     private ProgressDialog progressDialog;
     private final int UPLOADSUCCEED = 0X110;
     private final int UPLOADFAIL = 0X111;
@@ -115,9 +125,11 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
+                    showMessage("上传成功");
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
+                    showMessage("上传失败...");
                     break;
             }
             return false;
@@ -132,16 +144,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        intent = getIntent();
-        bhqid = intent.getStringExtra("bhqid");
-        bhqmc = intent.getStringExtra("bhqmc");
-        bhqjb = intent.getStringExtra("bhqjb");
-        Log.i(TAG, "onCreate: -------placeid------>"+intent.getStringExtra("placeid"));
-        Log.i(TAG, "onCreate: -------longitude------>"+intent.getDoubleExtra("longitude",0));
-        Log.i(TAG, "onCreate: -------latitude------>"+intent.getDoubleExtra("latitude",0));
-        jcdId = intent.getStringExtra("placeid");
-        jcdLongitude =intent.getDoubleExtra("longitude",0) ;
-        jcdlatitude = intent.getDoubleExtra("latitude",0);
+
         mapLayout = (LinearLayout) findViewById(R.id.show_mapview_LinearLayout);
         mapLayout.setVisibility(View.GONE);
         initView();
@@ -153,8 +156,6 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         in_yxqk_etxt = (EditText) findViewById(R.id.in_yxqk_etxt);
         in_bhqmc_etxt = (EditText) findViewById(R.id.in_bhqmc_etxt);
         in_jb_etxt = (EditText) findViewById(R.id.in_jb_etxt);
-        in_bhqmc_etxt.setText(bhqmc);
-        in_jb_etxt.setText(bhqjb);
         in_photo_img = (ImageView) findViewById(R.id.in_photo_img);
         in_canleImage = (TextView) findViewById(R.id.in_canleImage);
         in_qymc_etxt = (EditText) findViewById(R.id.in_qymc_etxt);
@@ -186,7 +187,6 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         reset_btn = (ImageButton) findViewById(R.id.reset_btn);//地图重置按钮
         txt_showInfo = (TextView) findViewById(R.id.report1_textview_area);
         baiduMap = mapView.getMap();
-        in_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
     }
     private void initMethod(){
         /*打开企业属性对话框
@@ -321,7 +321,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
-                        intent = new Intent(Intent.ACTION_PICK);
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         startActivityForResult(intent,PICK_RESULT);
                         dialog.dismiss();
@@ -340,11 +340,14 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         switch (requestCode) {
             case PICK_RESULT:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                   // Log.i("TAG", "onActivityResult: ====================>"+uri.getPath());
-                    photoPath =uri.getPath();
-                    Bitmap bitmap = PhotoImageSize.revitionImageSize(uri.getPath());
-
+                    //判断手机系统版本号
+                    if (Build.VERSION.SDK_INT > 19) {
+                        //4.4及以上系统使用这个方法处理图片
+                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
+                    }else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                    }
+                    Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     in_photo_img.setImageBitmap(bitmap);
                     Log.i("TAG", "onActivityResult:-------相册相片路径---------> "+photoPath+"---字节数---->"+bitmap.getByteCount()+"<========>"+bitmap.getRowBytes()*bitmap.getHeight());
                 }
@@ -493,14 +496,18 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         List<IndustryRecordBean> records = new ArrayList<>();
         IndustryBean bean = getIndustryBean();
         IndustryRecordBean recordBean = new IndustryRecordBean();
-        recordBean.setObjectid(TempData.placeid);
-        recordBean.setCenterpointx(TempData.longitude);
-        recordBean.setCenterpointy(TempData.latitude);
+        recordBean.setObjectid(jcdId);
+        recordBean.setCenterpointx(jcdLongitude);
+        recordBean.setCenterpointy(jcdlatitude);
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("03");
         jsonBean.setYhdh(TempData.username);
-        jsonBean.setIschecked("21");
+        if (activityType.equals("add")) {
+            jsonBean.setIschecked("21");
+        } else {
+            jsonBean.setIschecked("22");
+        }
         jsonBean.setRecord(records);
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
@@ -538,10 +545,10 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                             try {
                                 String responseValue = response.body().string();
 
-                                if (responseValue.equals("success")) {
+                                if (responseValue.contains("success")) {
                                     message.what = UPLOADSUCCEED;
                                     myHandler.sendMessage(message);
-                                } else if (responseValue.equals("fail")) {
+                                } else {
                                     message.what = UPLOADFAIL;
                                     myHandler.sendMessage(message);
                                 }
@@ -585,6 +592,33 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        intent = getIntent();
+
+        activityType = intent.getStringExtra("type");
+        if (activityType.equals("add")) {
+
+            bhqid = intent.getStringExtra("bhqid");
+            bhqmc = intent.getStringExtra("bhqmc");
+            bhqjb = intent.getStringExtra("bhqjb");
+            bhqjbdm = intent.getStringExtra("bhqjbdm");
+            jcdId = intent.getStringExtra("placeid");
+            jcdLongitude =intent.getDoubleExtra("longitude",0) ;
+            jcdlatitude = intent.getDoubleExtra("latitude",0);
+            //------------------------------
+            in_bhqmc_etxt.setText(bhqmc);
+            in_jb_etxt.setText(bhqjb);
+            in_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            jsxmID = "0";
+        } else {
+            mNoPassGyqy = (NoPassGyqy) intent.getSerializableExtra("bdData");
+            bhqmc = intent.getStringExtra("bdBhqmc");
+            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdlatitude = intent.getDoubleExtra("bdwd", 0);
+            jcdId = intent.getStringExtra("bdobjid");
+            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            //--------------------------------------------
+            setViewData();//获取更新数据
+        }
     }
 
     @Override
@@ -607,8 +641,8 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             sb.append(in_syq_txt.getText().toString().trim() + ":" + in_syq_etxt.getText().toString().trim());
         }
         String ybhqwzgx =sb.toString();//与保护区位置关系
-        ib.setJsxmid("0");
-        ib.setJsxmjb(in_jb_etxt.getText().toString().trim());
+        ib.setJsxmid(jsxmID);
+        ib.setJsxmjb(bhqjbdm);//in_jb_etxt.getText().toString().trim()
         ib.setBhqid(bhqid);
         ib.setJsxmmc(in_qymc_etxt.getText().toString().trim());
         ib.setJsxmgm(in_gm_etxt.getText().toString().trim());
@@ -650,7 +684,6 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
 
         ib.setUsername(TempData.username);
         ib.setPlaceid(jcdId);
-        ib.setIschecked("21");
         return ib;
     }
     //-----------------查询本地数据库是否已经存在该企业名称--------------------------------
@@ -678,6 +711,63 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         }
         return result;
     }
+    //=========================================================================================
+    private void setViewData(){
+        if (mNoPassGyqy != null) {
+            jsxmID = mNoPassGyqy.getJSXMID();
+            bhqid = mNoPassGyqy.getBHQID();
+            in_bhqmc_etxt.setText(bhqmc);
+            in_jb_etxt.setText(mNoPassGyqy.getJSXMJB());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassGyqy.getJSXMJB() ==null ? "" : mNoPassGyqy.getJSXMJB().toString().trim());
+            if (bhqjbB != null) {
+                in_jb_etxt.setText(bhqjbB.getDMMC1());
+                bhqjbdm = bhqjbB.getDMZ();
+            }
+            in_qymc_etxt.setText(mNoPassGyqy.getJSXMMC() == null ? "": mNoPassGyqy.getJSXMMC().toString().trim());
+            in_gm_etxt.setText(mNoPassGyqy.getJSXMGM() == null ? "":mNoPassGyqy.getJSXMGM().toString().trim());
+            in_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            in_xmmzb_etxt.setText(mNoPassGyqy.getMJZB());
+            in_scmj_etxt.setText(String.valueOf(mNoPassGyqy.getTJMJ()));
+            if (in_sjqh_radio1.getText().equals(mNoPassGyqy.getBJBHQSJ()==null?"":mNoPassGyqy.getBJBHQSJ().toString().trim())) {
+                in_sjqh_radio1.setChecked(true);
+            } else if (in_sjqh_radio2.getText().equals(mNoPassGyqy.getBJBHQSJ()==null?"":mNoPassGyqy.getBJBHQSJ().toString().trim())) {
+                in_sjqh_radio2.setChecked(true);
+            }
+            in_lsyg_etxt.setText(mNoPassGyqy.getLSYG() ==null ?"":mNoPassGyqy.getLSYG().toString().trim());
+            CodeTypeBean qysxB = codeType("QYSX",mNoPassGyqy.getQYSX() == null ? "":mNoPassGyqy.getQYSX().toString().trim());
+            if (qysxB != null) {
+                in_qysx_etxt.setText(qysxB.getDMMC1());
+                in_qysx_dmz.setText(qysxB.getDMZ());
+            }
+            in_hbpfwh_etxt.setText(mNoPassGyqy.getHBPZWH() == null ? "" :mNoPassGyqy.getHBPZWH().toString().trim());
+            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassGyqy.getISBHQ()==null?"":mNoPassGyqy.getISBHQ().toString().trim());
+            if (isBhqB != null) {
+                in_sfsbhq_etxt.setText(isBhqB.getDMMC1());
+                in_sfsbhq_dmz.setText(isBhqB.getDMZ());
+            }
+            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassGyqy.getISHBYS() == null ?"":mNoPassGyqy.getISHBYS().toString().trim());
+            if (isHbysB != null) {
+                in_sftghbys_etxt.setText(isHbysB.getDMMC1());
+                in_sftghbys_dmz.setText(isHbysB.getDMZ());
+            }
+            CodeTypeBean yxqkB = codeType("SCQK", mNoPassGyqy.getYXQK() == null ? "":mNoPassGyqy.getYXQK().toString().trim());
+            if (yxqkB != null) {
+                in_yxqk_etxt.setText(yxqkB.getDMMC1());
+                in_yxqk_dmz.setText(yxqkB.getDMZ());
+            }
+            in_syq_etxt.setText(String.valueOf(mNoPassGyqy.getSYMJ()));
+            in_hcq_etxt.setText(String.valueOf(mNoPassGyqy.getHCMJ()));
+            in_hxq_etxt.setText(String.valueOf(mNoPassGyqy.getHXMJ()));
+            in_lsqk_etxt.setText(mNoPassGyqy.getZGCS());
 
+        }
+    }
+    private CodeTypeBean codeType(String dmlb, String dmz){
+        dbManager = new DBManager(context);
+        String sql = "select * from codeType where dmlb = ? and dmz = ?";
+        String[] bindArgs = new String[]{dmlb,dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        return list.size() == 0 ? null : list.get(0);
+    }
 
 }

@@ -31,11 +31,6 @@
             ></Spinner>
     </LinearLayout>
 
-    <!--<android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/SwipeRLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/complete_Qy_Query">-->
 
         <ListView
             android:id="@+id/complete_list_view"
@@ -44,6 +39,6 @@
             android:layout_height="match_parent"
             android:longClickable="true"
             ></ListView>
- <!--   </android.support.v4.widget.SwipeRefreshLayout>-->
+
 
 </RelativeLayout>
