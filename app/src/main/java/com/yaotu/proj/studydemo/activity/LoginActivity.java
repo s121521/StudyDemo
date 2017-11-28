@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -47,21 +48,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Button bt_pwd_clear;
     private Button bt_pwd_eye;
     private Button login;
-    private String userName = "", userPwd = "",usertel = "";
+    private String yhdh = "", userPwd = "",usertel = "",yhmc;
     private boolean isOpen = false;
     private ProgressDialog progressDialog;
     private UserBean bean = null;//用户登录成功过去用户信息
     private final int  LOGINSUCCESS = 0X110;
     private final int LOGINERROR = 0x111;
+    private DBManager dbManager;
+    private Cursor cursor;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case LOGINSUCCESS:
                     progressDialog.dismiss();
+                    //1. 将用户保存本地
+                    saveUserLocal(yhdh,userPwd,yhmc);
+                    Log.i(TAG, "handleMessage: ----------请求网络数据登录并将数据保存在本地--------");
+                    //2.跳转主界面
                     Intent intent = new Intent(context, MainActivity.class);
-                    intent.putExtra("username", userName);
-
+                    intent.putExtra("yhdh", yhdh);
+                    intent.putExtra("yhmc", yhmc);
                     startActivity(intent);
                     finish();
                     break;
@@ -90,6 +97,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         bt_pwd_clear = (Button) findViewById(R.id.bt_pwd_clear);
         bt_pwd_eye = (Button) findViewById(R.id.bt_pwd_eye);
         login = (Button) findViewById(R.id.login);
+        dbManager = new DBManager(context);
     }
 
     private void initMethod() {
@@ -98,8 +106,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // 获得文本框中的用户
-                userName = username_etxt.getText().toString().trim();
-                if ("".equals(userName)) {
+                yhdh = username_etxt.getText().toString().trim();
+                if ("".equals(yhdh)) {
                     // 用户名为空,设置按钮不可见
                     bt_username_clear.setVisibility(View.INVISIBLE);
                 } else {
@@ -115,6 +123,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void afterTextChanged(Editable s) {
+                //Log.i(TAG, "afterTextChanged: --------------yhdh--------->"+yhdh);
+                UserBean userObj = queryLocalUserByYhdh(yhdh);
+                if (userObj != null) {
+                    Log.i(TAG, "afterTextChanged: --------------userObj--------->"+userObj);
+                    password_etxt.setText(userObj.getPwd().toString().trim());
+                } else {
+                    password_etxt.setText("");
+                }
             }
         });
 
@@ -123,13 +139,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // 获得文本框中的用户
+                // 获得文本框中的密码
                 userPwd = password_etxt.getText().toString().trim();
                 if ("".equals(userPwd)) {
-                    // 用户名为空,设置按钮不可见
+                    // 密码为空,设置按钮不可见
                     bt_pwd_clear.setVisibility(View.INVISIBLE);
                 } else {
-                    // 用户名不为空，设置按钮可见
+                    // 密码不为空，设置按钮可见
                     bt_pwd_clear.setVisibility(View.VISIBLE);
                 }
             }
@@ -180,6 +196,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()) {
             case R.id.bt_username_clear:
                 // 清除登录名
+                boolean r =  removeLocalUser(yhdh);
+                Log.i(TAG, "onClick: ------------删除一条本地用户记录---------------"+r);
                 username_etxt.setText("");
                 break;
             case R.id.bt_pwd_clear:
@@ -199,32 +217,32 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.login:
                 // TODO 登录按钮
-               /* if ("".equals(userName) || "".equals(userPwd)) {
+                if ("".equals(yhdh) || "".equals(userPwd)) {
                     showMessage("用户名或密码不能为空!");
                     return;
-                }*/
-               // Intent intent = new Intent(context, MainActivity.class);
-                //Intent intent = new Intent(context, DemoLbsActivity.class);
-               /* intent.putExtra("username", userName);
-                intent.putExtra("usertel", usertel);
+                }
+               //---------------------------------------------
+                /*Intent intent = new Intent(context, MainActivity.class);
+                intent.putExtra("yhdh", yhdh);
+                intent.putExtra("yhmc", yhmc);
                 startActivity(intent);
                 finish();*/
-                Intent intent = new Intent(context, MainActivity.class);
-                intent.putExtra("username", userName);
-                startActivity(intent);
-                finish();
-             // loginService(userName, userPwd);
+                //------------------------------------------------
 
-               // if (result) {//登录成功
-                   /* Log.i(TAG, "onClick: -----userbean:"+bean+"==="+bean.getUsername()+"======="+bean.getUsername()+"-----"+bean.getClass().getCanonicalName());
+                //-----------------修改日期：2017-11-12-------------------------
+                //1.先查本地数据库，判断数据库是否存在该用户(查询历史登录用户)
+                UserBean obj = queryLocalUser(yhdh, userPwd);
+                //2.存在：直接登录；不存在：请求服务器登录,若登录成功则跳转界面并保存用户信息
+                if (obj == null) {
+                    loginService(yhdh, userPwd);
+                } else {
+                    Log.i(TAG, "onClick: --------------请求本地数据登录--------------");
                     Intent intent = new Intent(context, MainActivity.class);
+                    intent.putExtra("yhdh", yhdh);
+                    intent.putExtra("yhmc", yhmc);
                     startActivity(intent);
-                    finish();*/
-              //  } else {//登录失败
-               //     showMessage("用户名或密码错误!");
-               //     progressDialog.dismiss();
-               // }
-
+                    finish();
+                }
                 break;
             default:
                 break;
@@ -233,8 +251,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
     private void loginService(String name, String pwd) {
-        final boolean[] threadFlag = {true};
-        final boolean[] loginResult = {false};
         //String pwd_jm = Encrypt.encryptPassword(pwd);//密码加密
         //Log.i(TAG, "loginService: ----------加密密码------->" + pwd_jm);
         //1.组织请求参数
@@ -243,13 +259,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         builder.add("userpassword", pwd);
         //2.显示进度条,准备请求服务器
         progressDialog = new ProgressDialog(context);
-        progressDialog.setCanceledOnTouchOutside(false);
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                threadFlag[0] = false;
-            }
-        });
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
         progressDialog.show();
         //3.开启一个新线程,请求服务器
         final String ipUrl = getResources().getString(R.string.http_url);
@@ -257,46 +268,92 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void run() {
                 try {
-                    Thread.sleep(3 * 1000);//暂停3秒,用来退出请求
                     Message message = Message.obtain();
-                    while (threadFlag[0]) {
-                        Response response = ParseIntentData.getDataPostByString(ipUrl+"/bhqService/Account/Login_Phone", builder);
-                        if (response != null & response.code() == 200) {
-                            String responseValue = response.body().string();
-                            Gson gson = new Gson();
-                            Type type = new TypeToken<LoginBean>(){}.getType();
-                             LoginBean obj =  gson.fromJson(responseValue, type);
-                            if (obj.getRETURNVALUE().equals("SUCCEED")) {
-                                message.what = LOGINSUCCESS;
-                                loginResult[0] = true;
-                                myHandler.sendMessage(message);
-                            } else if (obj.getRETURNVALUE().equals("ERROR")) {
-                                message.what = LOGINERROR;
-                                myHandler.sendMessage(message);
-                            }
-                            threadFlag[0] = false;
-                        } else {
-                            threadFlag[0] = false;
+                    Response response = ParseIntentData.getDataPostByString(ipUrl+"/bhqService/Account/Login_Phone", builder);
+                    if (response != null && response.code() == 200) {
+                        String responseValue = response.body().string();
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<LoginBean>(){}.getType();
+                         LoginBean obj =  gson.fromJson(responseValue, type);
+                        if (obj.getRETURNVALUE().equals("SUCCEED")) {
+                            message.what = LOGINSUCCESS;
+                            yhmc = obj.getUSERNAME();
+                            myHandler.sendMessage(message);
+                        } else if (obj.getRETURNVALUE().equals("ERROR")) {
                             message.what = LOGINERROR;
                             myHandler.sendMessage(message);
                         }
-
+                    } else {
+                        message.what = LOGINERROR;
+                        myHandler.sendMessage(message);
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                }catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
     }
 
-    private void saveUserLocal(UserBean bean) {
-        DBManager dbManager = new DBManager(context);
-        dbManager.updateBySql("insert into users(username,password,usertel) values()", new String[]{bean.getUsername(),bean.getPassword(),bean.getUsertel()});
+    private boolean saveUserLocal(String yhdh,String pwd,String yhmc) {
+        boolean result ;
+        if (dbManager == null) {
+            dbManager = new DBManager(context);
+        }
+        result = dbManager.updateBySql("insert into users(yhdh,pwd,yhmc) values(?,?,?)", new String[]{yhdh,pwd,yhmc});
+        return result;
     }
-
+    private UserBean queryLocalUser(String yhdh,String pwd){
+        if (dbManager == null) {
+            dbManager = new DBManager(context);
+        }
+        cursor = dbManager.queryEntity("select yhdh,pwd,yhmc from users where yhdh = ? and pwd = ? ", new String[]{yhdh,pwd});
+        UserBean userObj = null;
+        if (cursor.moveToNext()) {
+            userObj = new UserBean();
+            userObj.setYhdh(cursor.getString(cursor.getColumnIndex("yhdh")));
+            userObj.setYhmc(cursor.getString(cursor.getColumnIndex("yhmc")));
+            userObj.setPwd(cursor.getString(cursor.getColumnIndex("pwd")));
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return userObj;
+    }
+    private UserBean queryLocalUserByYhdh(String yhdh){
+        if (dbManager == null) {
+            dbManager = new DBManager(context);
+        }
+        cursor = dbManager.queryEntity("select yhdh,pwd,yhmc from users where yhdh = ? ", new String[]{yhdh});
+        UserBean userObj = null;
+        if (cursor.moveToNext()) {
+            userObj = new UserBean();
+            userObj.setYhdh(cursor.getString(cursor.getColumnIndex("yhdh")));
+            userObj.setYhmc(cursor.getString(cursor.getColumnIndex("yhmc")));
+            userObj.setPwd(cursor.getString(cursor.getColumnIndex("pwd")));
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return userObj;
+    }
+    private boolean removeLocalUser(String yhdh){
+        if (dbManager == null) {
+            dbManager = new DBManager(context);
+        }
+        boolean result;
+        result = dbManager.deleteTableData("users", "yhdh = ?",new String[]{yhdh});
+        return result;
+    }
+    //=============================================================================
     private void showMessage(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dbManager != null) {
+            dbManager.closeDB();
+        }
     }
 }

@@ -202,6 +202,16 @@ public class BackDataActivity extends AppCompatActivity {
                     view.requestFocusFromTouch();
                     mTextView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                 }
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(currContext);
+                builder.setTitle("回退信息");
+                builder.setMessage("");
+                builder.setNegativeButton("返回", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
             }
         });
 
@@ -359,7 +369,7 @@ public class BackDataActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Message message = Message.obtain();
-                Response response = ParseIntentData.getDataGetByString(IPURL+"/bhqService/BhqJsxm/GetAllNotPassedPoints?yhdh="+TempData.username+"&jsxmlx="+jsxmlx+"&bhqid=");
+                Response response = ParseIntentData.getDataGetByString(IPURL+"/bhqService/BhqJsxm/GetAllNotPassedPoints?yhdh="+TempData.yhdh+"&jsxmlx="+jsxmlx+"&bhqid=");
                 if (response != null && response.code() == 200) {//请求成功
                     Gson gson = new Gson();
                     try {
@@ -387,7 +397,7 @@ public class BackDataActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Message message = Message.obtain();
-                Response response = ParseIntentData.getDataGetByString(IPURL+"/bhqService/BhqJsxm/GetAllNotPassedPoints?yhdh="+TempData.username+"&jsxmlx="+jsxmlx+"&bhqid="+bhqid);
+                Response response = ParseIntentData.getDataGetByString(IPURL+"/bhqService/BhqJsxm/GetAllNotPassedPoints?yhdh="+TempData.yhdh+"&jsxmlx="+jsxmlx+"&bhqid="+bhqid);
                 if (response != null && response.code() == 200) {//请求成功
                     Gson gson = new Gson();
                     try {

@@ -98,7 +98,7 @@ public class AddSamplePlotActivity extends AppCompatActivity {
             locMag.requestLocationUpdates(provider,1 * 1000,0,m_locationListener);
         }
         setListener();
-
+    
     }
     private void setListener(){
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

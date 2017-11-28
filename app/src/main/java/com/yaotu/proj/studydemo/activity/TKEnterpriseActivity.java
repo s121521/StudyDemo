@@ -97,6 +97,8 @@ import okhttp3.Response;
 public class TKEnterpriseActivity extends AppCompatActivity {
     private final int  UPLOADSUCCEED = 0X110;//上传成功
     private final int UPLOADFAIL = 0X111;//上传失败
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
     private String IPURL ="";//服务器IP地址
     private final String TAG = this.getClass().getSimpleName();
     private MapValueType valueType = null;
@@ -146,17 +148,44 @@ public class TKEnterpriseActivity extends AppCompatActivity {
     private String jcdId;//监测点ID
     private DBManager dbManager;
     private String jsxmID = "0";//添加为0；更行为原有id;
+    private String dataUplocadSucceed;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case  UPLOADSUCCEED:
                     progressDialog.dismiss();
-                    showMessage("上传成功！");
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    } else {
+                        showMessage("上传成功");
+                    }
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
                     showMessage("上传失败...");
+                    break;
+                case UPLOADPICSUCCEED:
+                    showMessage("照片上传成功!");
+                    break;
+                case UPLOADPICFAIL:
+                    showMessage("照片上传失败!");
                     break;
                 default:
                     break;
@@ -625,10 +654,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                 Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 tk_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + "pic_" + fileName + ".jpg"));
-                intent.setData(uri);
-                context.sendBroadcast(intent);
+                upDateDcim(file.getName());
 
                 break;
             default:
@@ -701,7 +727,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         Record.add(recordBean);
         TKJsonBean tkJsonBean = new TKJsonBean();
         tkJsonBean.setKey("02");
-        tkJsonBean.setYhdh(TempData.username);
+        tkJsonBean.setYhdh(TempData.yhdh);
         if (activityType.equals("add")) {
             tkJsonBean.setIschecked("21");
         } else {
@@ -736,7 +762,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                     try {
-                        Thread.sleep(5*1000);
+                        Thread.sleep(2*1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -747,19 +773,16 @@ public class TKEnterpriseActivity extends AppCompatActivity {
                         if (response != null && response.code() == 200) {
                             try {
                                 String resultValue = response.body().string();
-                            Log.i(TAG, "onClick: --------------上传数据返回值------>" + resultValue);
-                            if (resultValue.contains("success")) {//上传成功
+                                dataUplocadSucceed = resultValue;
                                 message.what = UPLOADSUCCEED;
                                 myHandler.sendMessage(message);
-                            } else{//上传失败
-                                message.what = UPLOADFAIL;
-                                myHandler.sendMessage(message);
-                            }
+                                threadFlag = false;
+
                         } catch (IOException e) {
                             e.printStackTrace();
                             response.close();
                         }
-                        threadFlag = false;
+
                     } else {
                             message.what = UPLOADFAIL;
                             myHandler.sendMessage(message);
@@ -780,6 +803,30 @@ public class TKEnterpriseActivity extends AppCompatActivity {
             }
         });
         alterDialog.create().show();
+    }
+    private void uploadPic(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = IPURL+"/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
     }
     //============================================================================================
     @Override
@@ -889,7 +936,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         tb.setMjzb(tk_ktxmmzb_etxt.getText().toString().trim());
 
         tb.setVkqsx(tk_kqsx_etxt.getText().toString().trim());
-        tb.setUsername(TempData.username);
+        tb.setUsername(TempData.yhdh);
         tb.setPlaceid(jcdId);
         tb.setPhotoPath(photoPath);
         tb.setBhqmc(bhqmc);
@@ -997,5 +1044,13 @@ public class TKEnterpriseActivity extends AppCompatActivity {
         String[] bindArgs = new String[]{dmlb,dmz};
         List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
        return list.size() == 0 ? null : list.get(0);
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:" + fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }

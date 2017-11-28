@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,12 +70,15 @@ import com.yaotu.proj.studydemo.bean.tableBean.TravelJsonBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelRecordBean;
 import com.yaotu.proj.studydemo.bean.tableBean.kczyBean;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
+import com.yaotu.proj.studydemo.customclass.PhotoImageSize;
 import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.customclass.UpdateLocalTableData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
+import com.yaotu.proj.studydemo.util.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +109,11 @@ public class ShowCompleteActivity extends AppCompatActivity {
 
     private final int UPLOADSUCCEED = 0X110;
     private final int UPLOADFAIL = 0X111;
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
+    private String photoPath;
+    private String dataUplocadSucceed;
+    private String ipUrl;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -110,6 +121,25 @@ public class ShowCompleteActivity extends AppCompatActivity {
                 case UPLOADSUCCEED:
                     progresDialog.dismiss();
                     removeMethod(recordPosition);
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    }
                     break;
                 case UPLOADFAIL:
                     progresDialog.dismiss();
@@ -143,7 +173,6 @@ public class ShowCompleteActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
 
     }
 
@@ -194,7 +223,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
                     qyeryLocalData("DevelopqyInfo");
                 }
                 if (bhqInfoList.size() > 0) {
-                    SqliteListView(bhqInfoList.get(0).getBHQID(), TempData.username);
+                    SqliteListView(bhqInfoList.get(0).getBHQID(), TempData.yhdh);
                 }
                 spinnerAdapter.notifyDataSetChanged();
 
@@ -217,7 +246,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.i(TAG, "onItemSelected: --------" + bhqInfoList.get(position).getBHQID());//从集合中获取被选择的数据项
                 String bhqid = bhqInfoList.get(position).getBHQID();
-                SqliteListView(bhqid, TempData.username);
+                SqliteListView(bhqid, TempData.yhdh);
             }
 
             @Override
@@ -415,7 +444,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
     private void qyeryLocalData(String tabName) {
         bhqInfoList.clear();
         dbManager = new DBManager(context);
-        cursor = dbManager.queryEntity("select distinct bhqid,bhqmc from " + tabName + " where username = ?", new String[]{TempData.username});
+        cursor = dbManager.queryEntity("select distinct bhqid,bhqmc from " + tabName + " where username = ?", new String[]{TempData.yhdh});
         if (cursor == null) {
             return;
         }
@@ -440,7 +469,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
     //=================================删除表中数据=======================================================
     private void removeMethod(int position) {
         if (qyTypeStr.equals("探矿企业")) {
-            boolean reault = removeSqliteData("TkqyInfo", "bhqid = ? and placeid = ?  and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean reault = removeSqliteData("TkqyInfo", "bhqid = ? and placeid = ?  and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (reault) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -453,7 +482,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
                 showMessage("删除失败...");
             }
         } else if (qyTypeStr.equals("工业企业")) {
-            boolean result = removeSqliteData("GyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("GyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -467,7 +496,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("矿产资源开发企业")) {
-            boolean result = removeSqliteData("KczyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("KczyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -481,7 +510,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("旅游资源开发企业")) {
-            boolean result = removeSqliteData("TravelqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("TravelqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -495,7 +524,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("新能源项目")) {
-            boolean result = removeSqliteData("NewEnergyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("NewEnergyqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -509,7 +538,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("开垦活动")) {
-            boolean result = removeSqliteData("AssartqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("AssartqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -523,7 +552,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             }
 
         } else if (qyTypeStr.equals("其他开发建设活动")) {
-            boolean result = removeSqliteData("DevelopqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.username});
+            boolean result = removeSqliteData("DevelopqyInfo", "bhqid = ? and placeid = ?   and username = ?", new String[]{listQyInfo.get(position).getBhqid(), listQyInfo.get(position).getPlaceid(), TempData.yhdh});
             if (result) {
                 listQyInfo.remove(position);
                 myListviewAdapter.notifyDataSetChanged();
@@ -594,7 +623,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(tkRecord);
             TKJsonBean jsonbean = new TKJsonBean();
             jsonbean.setKey("02");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -604,6 +633,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
             //showMessage("上传" + listQyInfo.get(position).getQymc());
@@ -620,7 +650,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(inRecordBean);
             IndustryJsonBean jsonbean = new IndustryJsonBean();
             jsonbean.setKey("03");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -630,6 +660,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         } else if (qyTypeStr.equals("矿产资源开发企业")) {
@@ -645,7 +676,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(kcRecord);
             KczyJsonBean jsonbean = new KczyJsonBean();
             jsonbean.setKey("01");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -655,6 +686,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         } else if (qyTypeStr.equals("旅游资源开发企业")) {
@@ -670,7 +702,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(trRecord);
             TravelJsonBean jsonbean = new TravelJsonBean();
             jsonbean.setKey("04");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -680,6 +712,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         } else if (qyTypeStr.equals("新能源项目")) {
@@ -695,7 +728,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(neRecord);
             NewEnergyJsonBean jsonbean = new NewEnergyJsonBean();
             jsonbean.setKey("05");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -705,6 +738,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         } else if (qyTypeStr.equals("开垦活动")) {
@@ -720,7 +754,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(asRecord);
             AssartJsonBean jsonbean = new AssartJsonBean();
             jsonbean.setKey("06");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -730,6 +764,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         } else if (qyTypeStr.equals("其他开发建设活动")) {
@@ -745,7 +780,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Records.add(dcRecord);
             DevelopConstructionJsonBean jsonbean = new DevelopConstructionJsonBean();
             jsonbean.setKey("07");
-            jsonbean.setYhdh(TempData.username);
+            jsonbean.setYhdh(TempData.yhdh);
             if (bean.getJsxmid().equals("0")) {
                 jsonbean.setIschecked("21");
             } else {
@@ -755,6 +790,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String jsonStr = gson.toJson(jsonbean);
             myUploadThread myThread = new myUploadThread(jsonStr);
+            photoPath = bean.getPhotoPath();
             Log.i(TAG, "upLoadData: ------------->" + jsonStr);
             new Thread(myThread).start();
         }
@@ -764,7 +800,6 @@ public class ShowCompleteActivity extends AppCompatActivity {
 
     class myUploadThread implements Runnable {
         String jsonStr = "";
-        String ipUrl = getResources().getString(R.string.http_url);
         Message message = Message.obtain();
 
         public myUploadThread(String jsonStr) {
@@ -774,7 +809,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                Thread.sleep(5 * 1000);
+                Thread.sleep(2* 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -784,18 +819,15 @@ public class ShowCompleteActivity extends AppCompatActivity {
                 if (response != null && response.code() == 200) {//判断是否有返回结果，有结果则结束线程
                     try {
                         String value = response.body().string();
-                        if (value.contains("success")) {
-                            message.what = UPLOADSUCCEED;
-                            myHandler.sendMessage(message);
-                        } else {
-                            message.what = UPLOADFAIL;
-                            myHandler.sendMessage(message);
-                        }
+                        dataUplocadSucceed = value;
+                        message.what = UPLOADSUCCEED;
+                        myHandler.sendMessage(message);
+                        threadFlag = false;
                         Log.i(TAG, "run: ------------数据上传返回结果：" + value + "---------上传数据值：" + jsonStr);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    threadFlag = false;
+
                 } else {
                     message.what = UPLOADFAIL;
                     myHandler.sendMessage(message);
@@ -813,7 +845,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
 
     private View showDetailInfoDialog(String bhqid, String jsxmmc) {
         QueryLocalTableData queryLocal = new QueryLocalTableData(context);
-        String[] whereParam = new String[]{bhqid, jsxmmc, TempData.username};
+        String[] whereParam = new String[]{bhqid, jsxmmc, TempData.yhdh};
         String sql = "";
         View view = null;
         if (qyTypeStr.equals("探矿企业")) {
@@ -920,5 +952,46 @@ public class ShowCompleteActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if ("".equals(ipUrl) || ipUrl == null) {
+            ipUrl = getResources().getString(R.string.http_url);
+        }
+    }
+
+    private void uploadPic(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = ipUrl+"/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName){
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:"+fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }

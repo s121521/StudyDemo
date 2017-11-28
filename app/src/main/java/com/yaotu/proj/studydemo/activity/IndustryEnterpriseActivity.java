@@ -88,16 +88,16 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private EditText in_lsyg_etxt;//历史沿革
     private EditText in_hbpfwh_etxt;//环保批复
     private EditText in_sfsbhq_etxt;//是否涉保护区
-    private TextView in_qysx_dmz,in_yxqk_dmz,in_sfsbhq_dmz,in_sftghbys_dmz;
+    private TextView in_qysx_dmz, in_yxqk_dmz, in_sfsbhq_dmz, in_sftghbys_dmz;
     private EditText in_sftghbys_etxt;//是否通过环保验收
     private EditText in_syq_etxt;//实验区
     private EditText in_hcq_etxt;//缓冲区
     private EditText in_hxq_etxt;//核心区
     private EditText in_lsqk_etxt;//整改落实情况
-    private TextView in_syq_txt,in_hcq_txt,in_hxq_txt;
+    private TextView in_syq_txt, in_hcq_txt, in_hxq_txt;
     private TextView in_canleImage;
     private ImageView in_photo_img;
-    private String bhqid,bhqmc,bhqjb,bhqjbdm;
+    private String bhqid, bhqmc, bhqjb, bhqjbdm;
     private Intent intent;
     private DBManager dbManager;
     private MapValueType valueType = null;
@@ -105,7 +105,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private MapView mapView;
     private BaiduMap baiduMap;
     private Location m_location;
-    private ImageButton dot_btn,reset_btn;//地图button
+    private ImageButton dot_btn, reset_btn;//地图button
     private TextView txt_showInfo;
 
     private InitMap initMap;
@@ -117,24 +117,54 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private NoPassGyqy mNoPassGyqy;
     private String jsxmID = "0";//添加为0；更行为原有id;
     private ProgressDialog progressDialog;
-    private final int UPLOADSUCCEED = 0X110;
-    private final int UPLOADFAIL = 0X111;
+    private final int UPLOADSUCCEED = 0X000;
+    private final int UPLOADFAIL = 0X001;
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
+    private String dataUplocadSucceed;
+    private String IPURL;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
-                    showMessage("上传成功");
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    }else {
+                        showMessage("上传成功");
+                    }
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
                     showMessage("上传失败...");
                     break;
+                case UPLOADPICSUCCEED:
+                    showMessage("照片上传成功!");
+                    break;
+                case UPLOADPICFAIL:
+                    showMessage("照片上传失败!");
             }
             return false;
         }
     });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,8 +180,10 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         initView();
         initMethod();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
+        IPURL = getResources().getString(R.string.http_url);
     }
-    private void initView(){
+
+    private void initView() {
         in_qysx_etxt = (EditText) findViewById(R.id.in_qysx_etxt);
         in_yxqk_etxt = (EditText) findViewById(R.id.in_yxqk_etxt);
         in_bhqmc_etxt = (EditText) findViewById(R.id.in_bhqmc_etxt);
@@ -188,13 +220,14 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         txt_showInfo = (TextView) findViewById(R.id.report1_textview_area);
         baiduMap = mapView.getMap();
     }
-    private void initMethod(){
+
+    private void initMethod() {
         /*打开企业属性对话框
         * */
         in_qysx_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,in_qysx_dmz,in_qysx_etxt,"企业属性","QYSX");
+                CustomDialog cd = new CustomDialog(context, in_qysx_dmz, in_qysx_etxt, "企业属性", "QYSX");
                 cd.showQksxDialog();
             }
         });
@@ -203,7 +236,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         in_yxqk_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,in_yxqk_dmz,in_yxqk_etxt,"运行情况","SCQK");
+                CustomDialog cd = new CustomDialog(context, in_yxqk_dmz, in_yxqk_etxt, "运行情况", "SCQK");
                 cd.showQksxDialog();
             }
         });
@@ -213,7 +246,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         in_sfsbhq_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,in_sfsbhq_dmz,in_sfsbhq_etxt,"是否设保护区","ISBHQ");
+                CustomDialog cd = new CustomDialog(context, in_sfsbhq_dmz, in_sfsbhq_etxt, "是否设保护区", "ISBHQ");
                 cd.showQksxDialog();
             }
         });
@@ -222,7 +255,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         in_sftghbys_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,in_sftghbys_dmz,in_sftghbys_etxt,"是否通过环保验收","ISHBYS");
+                CustomDialog cd = new CustomDialog(context, in_sftghbys_dmz, in_sftghbys_etxt, "是否通过环保验收", "ISHBYS");
                 cd.showQksxDialog();
             }
         });
@@ -232,7 +265,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         in_photo_img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               showPhotoDialog();
+                showPhotoDialog();
             }
         });
         /*
@@ -274,24 +307,23 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (in_sjqh_radio1.getId() == checkedId) {
                     in_sjqhStr = in_sjqh_radio1.getText().toString().trim();
-                    Log.i(TAG, "onCheckedChanged: ----------------始建前后----->"+in_sjqhStr);
+                    Log.i(TAG, "onCheckedChanged: ----------------始建前后----->" + in_sjqhStr);
                 } else if (in_sjqh_radio2.getId() == checkedId) {
                     in_sjqhStr = in_sjqh_radio2.getText().toString().trim();
-                    Log.i(TAG, "onCheckedChanged: ----------------始建前后----->"+in_sjqhStr);
+                    Log.i(TAG, "onCheckedChanged: ----------------始建前后----->" + in_sjqhStr);
                 }
             }
         });
     }
 
     /**
-     *
      * @param item
      * @return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home :
+            case android.R.id.home:
                 finish();
                 break;
             default:
@@ -299,6 +331,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     //---------------------------------------------------------------------
     /*
     打开拍照对话框
@@ -306,6 +339,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     private final int OPEN_RESULT = 1; // 相机
     private final int PICK_RESULT = 2;// 本地相册
     private AlertDialog.Builder dialog;
+
     public void showPhotoDialog() {
         dialog = new AlertDialog.Builder(context);
         final String[] items = new String[]{"拍照", "从相册选择"};
@@ -316,14 +350,14 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                     case 0:
                         Log.i("TAG", "onClick: 0" + items[which]);
                         intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent,OPEN_RESULT);
+                        startActivityForResult(intent, OPEN_RESULT);
                         dialog.dismiss();
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
                         intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
-                        startActivityForResult(intent,PICK_RESULT);
+                        startActivityForResult(intent, PICK_RESULT);
                         dialog.dismiss();
                         break;
                 }
@@ -334,6 +368,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     }
 
     private String photoPath = "";
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -343,13 +378,13 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                     //判断手机系统版本号
                     if (Build.VERSION.SDK_INT > 19) {
                         //4.4及以上系统使用这个方法处理图片
-                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
-                    }else {
-                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                        photoPath = HandleImage.handleImgeOnKitKat(context, data);
+                    } else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context, data);
                     }
                     Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     in_photo_img.setImageBitmap(bitmap);
-                    Log.i("TAG", "onActivityResult:-------相册相片路径---------> "+photoPath+"---字节数---->"+bitmap.getByteCount()+"<========>"+bitmap.getRowBytes()*bitmap.getHeight());
+                    Log.i("TAG", "onActivityResult:-------相册相片路径---------> " + photoPath + "---字节数---->" + bitmap.getByteCount() + "<========>" + bitmap.getRowBytes() * bitmap.getHeight());
                 }
                 break;
             case OPEN_RESULT:
@@ -360,15 +395,12 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                 String fileName = String.valueOf(System.currentTimeMillis());
                 Bundle bundle = data.getExtras();
                 Bitmap bitmap = (Bitmap) bundle.get("data");
-                File file= FileUtils.saveBitmap(bitmap, fileName);
+                File file = FileUtils.saveBitmap(bitmap, fileName);
                 photoPath = file.getAbsolutePath();
-                Log.i("TAG", "onActivityResult:-------相机相片路径---------> "+photoPath+"----->"+file.getPath());
+                Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 in_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri uri = Uri.fromFile(new File(FileUtils.SDPATH+"pic_"+fileName+".jpg"));
-                intent.setData(uri);
-                context.sendBroadcast(intent);
+                upDateDcim(file.getName());
                 break;
             default:
                 break;
@@ -382,25 +414,25 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         if (m_location != null) {
             switch (valueType) {
                 case centerCoordinate:
-                    in_zxzb_etxt.setText(String.valueOf(m_location.getLongitude())+","+String.valueOf(m_location.getLatitude()));
+                    in_zxzb_etxt.setText(String.valueOf(m_location.getLongitude()) + "," + String.valueOf(m_location.getLatitude()));
                     dot_btn.setVisibility(View.VISIBLE);
                     reset_btn.setVisibility(View.VISIBLE);
                     break;
                 case multiPoint:
-                    Log.i(TAG, "getValueMethod: --------------->"+ TempData.pointList.toString());
+                    Log.i(TAG, "getValueMethod: --------------->" + TempData.pointList.toString());
                     StringBuilder sb = new StringBuilder();
                     int len = TempData.pointList.size();
                     for (int i = 0; i < len; i++) {
-                        sb.append("["+TempData.latLngList.get(i).longitude+","+TempData.latLngList.get(i).latitude+"],");
-                        if (i == len-1) {
-                            sb.append("["+TempData.latLngList.get(i).longitude+","+TempData.latLngList.get(i).latitude+"]");
+                        sb.append("[" + TempData.latLngList.get(i).longitude + "," + TempData.latLngList.get(i).latitude + "],");
+                        if (i == len - 1) {
+                            sb.append("[" + TempData.latLngList.get(i).longitude + "," + TempData.latLngList.get(i).latitude + "]");
                         }
                     }
                     if (len == 0) {
                         in_xmmzb_etxt.setText("未获得点...");
                     } else {
-                        in_xmmzb_etxt.setText("[["+sb.toString()+"]]");
-                        in_scmj_etxt.setText(String.format("%.2f",initMap.getArea()));
+                        in_xmmzb_etxt.setText("[[" + sb.toString() + "]]");
+                        in_scmj_etxt.setText(String.format("%.2f", initMap.getArea()));
                     }
                     initMap.reset();
 
@@ -409,40 +441,45 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
 
         }
     }
+
     public void resetMethod(View view) {//重置
         TempData.pointList.clear();
         baiduMap.clear();
         txt_showInfo.setText("");
     }
+
     private boolean isBaiduLatlng = true;
+
     public void getDotMethod(View view) {//打点
         m_location = initMap.getM_location();
         if (null != m_location) {
             LatLng latLng = initMap.latLngConVert(new LatLng(m_location.getLatitude(), m_location.getLongitude()));
             TempData.pointList.add(latLng);//存百度坐标点
             TempData.latLngList.add(new LatLng(m_location.getLatitude(), m_location.getLongitude()));//存设备经纬度坐标点
-            Log.i(TAG, "getDotMethod: ----------------->"+TempData.pointList.toString());
+            Log.i(TAG, "getDotMethod: ----------------->" + TempData.pointList.toString());
             if (TempData.pointList.size() < 3) {
                 initMap.drawDot(latLng);
-                showMessage("还需 "+(3 - TempData.pointList.size())+" 个点显示面");
+                showMessage("还需 " + (3 - TempData.pointList.size()) + " 个点显示面");
             } else {
-                initMap.drawPolyGonByGps(TempData.pointList,isBaiduLatlng);
+                initMap.drawPolyGonByGps(TempData.pointList, isBaiduLatlng);
             }
         } else {
             showMessage("获得经纬度失败...");
         }
     }
+
     public void moveCurrentPosition(View view) {//移动到当前位置
         m_location = initMap.getM_location();
         if (null != m_location) {
             initMap.localization(m_location);
-            baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(initMap.latLngConVert(new LatLng(m_location.getLatitude(),m_location.getLongitude())),16));
+            baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(initMap.latLngConVert(new LatLng(m_location.getLatitude(), m_location.getLongitude())), 16));
         } else {
             showMessage("暂时无法定位，请确保GPS打开或网络连接");
         }
     }
+
     //================================提交/保存====================================================
-    public void submitBtnMethod(View view){
+    public void submitBtnMethod(View view) {
         int netType = CheckNetwork.getNetWorkState(context);
         if (in_qymc_etxt.getText().toString().trim().equals("")) {
             showMessage("企业名称不能为空！");
@@ -456,7 +493,8 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             upload();
         }
     }
-    public void saveBtnMethod(View view){
+
+    public void saveBtnMethod(View view) {
         if (in_qymc_etxt.getText().toString().trim().equals("")) {
             showMessage("企业名称不能为空！");
             return;
@@ -470,7 +508,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                 if (IsExist(industryBean)) {
                     showMessage("该企业在本地数据已经存在!");
                 } else {
-                    boolean inResult = insertGyqyInfo(industryBean,0+"");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
+                    boolean inResult = insertGyqyInfo(industryBean, 0 + "");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
                     if (inResult) {
                         showMessage("保存成功!");
                     } else {
@@ -488,9 +526,11 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         });
         dialog.create().show();
     }
+
     //=========================================================================================
     private boolean threadFlag;
-    private void upload(){
+
+    private void upload() {
         //1.组织要提交的数据
         IndustryJsonBean jsonBean = new IndustryJsonBean();
         List<IndustryRecordBean> records = new ArrayList<>();
@@ -502,7 +542,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("03");
-        jsonBean.setYhdh(TempData.username);
+        jsonBean.setYhdh(TempData.yhdh);
         if (activityType.equals("add")) {
             jsonBean.setIschecked("21");
         } else {
@@ -511,14 +551,14 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         jsonBean.setRecord(records);
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
-        Log.i(TAG, "onClick: ------------工业企业上传数据----------->"+jsonStr);
+        Log.i(TAG, "onClick: ------------工业企业上传数据----------->" + jsonStr);
         //2.连接服务器上传
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage("是否上传数据？");
         dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                threadFlag  = true;
+                threadFlag = true;
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setMessage("正在上传数据...");
                 progressDialog.setCanceledOnTouchOutside(false);
@@ -529,39 +569,35 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
                     }
                 });
                 progressDialog.show();
-                final String IPURL = getResources().getString(R.string.http_url);
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                    while (threadFlag) {
-                        try {
-                            Thread.sleep(5*1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        Response response = ParseIntentData.getDataPostByJson(IPURL + "/WebEsriApp/actionapi/cjwBhqJsxm/SaveBhqJsxmInfo",jsonStr);
-                        Message message = Message.obtain();
-                        if (response != null && response.code() == 200) {
+                        while (threadFlag) {
                             try {
-                                String responseValue = response.body().string();
-
-                                if (responseValue.contains("success")) {
-                                    message.what = UPLOADSUCCEED;
-                                    myHandler.sendMessage(message);
-                                } else {
-                                    message.what = UPLOADFAIL;
-                                    myHandler.sendMessage(message);
-                                }
-                            } catch (IOException e) {
+                                Thread.sleep(2 * 1000);
+                            } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            threadFlag = false;
-                        } else {
-                            message.what = UPLOADFAIL;
-                            myHandler.sendMessage(message);
-                            threadFlag = false;
+                            Response response = ParseIntentData.getDataPostByJson(IPURL + "/WebEsriApp/actionapi/cjwBhqJsxm/SaveBhqJsxmInfo", jsonStr);
+                            Message message = Message.obtain();
+                            if (response != null && response.code() == 200) {
+                                try {
+                                    String responseValue = response.body().string();
+                                    dataUplocadSucceed = responseValue;
+                                    message.what = UPLOADSUCCEED;
+                                    myHandler.sendMessage(message);
+                                    threadFlag = false;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            } else {
+                                message.what = UPLOADFAIL;
+                                myHandler.sendMessage(message);
+                                threadFlag = false;
+                            }
                         }
-                    }
 
                     }
                 }).start();
@@ -578,10 +614,35 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         dialog.create().show();
 
     }
-    //=============================================================================================
-    public void showMessage(String msg){
-        Toast.makeText(context,msg,Toast.LENGTH_SHORT).show();
+    private void uploadPic(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = IPURL+"/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
     }
+    //=============================================================================================
+    public void showMessage(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -602,20 +663,20 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
             bhqjb = intent.getStringExtra("bhqjb");
             bhqjbdm = intent.getStringExtra("bhqjbdm");
             jcdId = intent.getStringExtra("placeid");
-            jcdLongitude =intent.getDoubleExtra("longitude",0) ;
-            jcdlatitude = intent.getDoubleExtra("latitude",0);
+            jcdLongitude = intent.getDoubleExtra("longitude", 0);
+            jcdlatitude = intent.getDoubleExtra("latitude", 0);
             //------------------------------
             in_bhqmc_etxt.setText(bhqmc);
             in_jb_etxt.setText(bhqjb);
-            in_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            in_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             jsxmID = "0";
         } else {
             mNoPassGyqy = (NoPassGyqy) intent.getSerializableExtra("bdData");
             bhqmc = intent.getStringExtra("bdBhqmc");
-            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdLongitude = intent.getDoubleExtra("bdjd", 0);
             jcdlatitude = intent.getDoubleExtra("bdwd", 0);
             jcdId = intent.getStringExtra("bdobjid");
-            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            Log.i(TAG, "onResume: ----------bhqmc:" + bhqmc);
             //--------------------------------------------
             setViewData();//获取更新数据
         }
@@ -628,7 +689,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
     }
 
     //====================================初始化表单数据========================================
-    private IndustryBean getIndustryBean(){
+    private IndustryBean getIndustryBean() {
         IndustryBean ib = new IndustryBean();
         StringBuilder sb = new StringBuilder();
         if (!in_hxq_etxt.getText().toString().trim().equals("")) {
@@ -640,7 +701,7 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         if (!in_syq_etxt.getText().toString().trim().equals("")) {
             sb.append(in_syq_txt.getText().toString().trim() + ":" + in_syq_etxt.getText().toString().trim());
         }
-        String ybhqwzgx =sb.toString();//与保护区位置关系
+        String ybhqwzgx = sb.toString();//与保护区位置关系
         ib.setJsxmid(jsxmID);
         ib.setJsxmjb(bhqjbdm);//in_jb_etxt.getText().toString().trim()
         ib.setBhqid(bhqid);
@@ -662,13 +723,13 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         ib.setVishbys(in_sftghbys_etxt.getText().toString().trim());
         ib.setVqysx(in_qysx_etxt.getText().toString().trim());
         String centerpoint = in_zxzb_etxt.getText().toString().trim();
-        String pointx ="";
+        String pointx = "";
         String pointy = "";
         if (!"".equals(centerpoint)) {
-            Log.i(TAG, "getIndustryBean: ------centerpoint------->"+centerpoint);
+            Log.i(TAG, "getIndustryBean: ------centerpoint------->" + centerpoint);
             int temp = centerpoint.indexOf(",");
             pointx = centerpoint.substring(0, temp);
-            pointy = centerpoint.substring(temp+1);
+            pointy = centerpoint.substring(temp + 1);
         }
         ib.setCenterpointx(pointx);
         ib.setCenterpointy(pointy);
@@ -682,26 +743,28 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         ib.setPhotoPath(photoPath);
         ib.setBhqmc(bhqmc);
 
-        ib.setUsername(TempData.username);
+        ib.setUsername(TempData.yhdh);
         ib.setPlaceid(jcdId);
         return ib;
     }
+
     //-----------------查询本地数据库是否已经存在该企业名称--------------------------------
-    private boolean IsExist(IndustryBean bean){
+    private boolean IsExist(IndustryBean bean) {
         QueryLocalTableData query = new QueryLocalTableData(context);
-        String sql ="select * from GyqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
-        String[] strs = new String[]{bean.getBhqid(),bean.getJsxmmc(),bean.getUsername()};
-        List<IndustryBean> list = query.queryGyqyInfos(sql,strs);
+        String sql = "select * from GyqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
+        String[] strs = new String[]{bean.getBhqid(), bean.getJsxmmc(), bean.getUsername()};
+        List<IndustryBean> list = query.queryGyqyInfos(sql, strs);
         if (list != null) {
-            if (list.size() >0) {
+            if (list.size() > 0) {
                 return true;//存在
             }
         }
         return false;//不存在
     }
+
     /*插入本地数据
     * */
-    private boolean insertGyqyInfo(IndustryBean bean,String upState){
+    private boolean insertGyqyInfo(IndustryBean bean, String upState) {
 
         boolean result = false;
         if (bean != null) {
@@ -711,46 +774,47 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
         }
         return result;
     }
+
     //=========================================================================================
-    private void setViewData(){
+    private void setViewData() {
         if (mNoPassGyqy != null) {
             jsxmID = mNoPassGyqy.getJSXMID();
             bhqid = mNoPassGyqy.getBHQID();
             in_bhqmc_etxt.setText(bhqmc);
             in_jb_etxt.setText(mNoPassGyqy.getJSXMJB());
-            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassGyqy.getJSXMJB() ==null ? "" : mNoPassGyqy.getJSXMJB().toString().trim());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassGyqy.getJSXMJB() == null ? "" : mNoPassGyqy.getJSXMJB().toString().trim());
             if (bhqjbB != null) {
                 in_jb_etxt.setText(bhqjbB.getDMMC1());
                 bhqjbdm = bhqjbB.getDMZ();
             }
-            in_qymc_etxt.setText(mNoPassGyqy.getJSXMMC() == null ? "": mNoPassGyqy.getJSXMMC().toString().trim());
-            in_gm_etxt.setText(mNoPassGyqy.getJSXMGM() == null ? "":mNoPassGyqy.getJSXMGM().toString().trim());
-            in_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            in_qymc_etxt.setText(mNoPassGyqy.getJSXMMC() == null ? "" : mNoPassGyqy.getJSXMMC().toString().trim());
+            in_gm_etxt.setText(mNoPassGyqy.getJSXMGM() == null ? "" : mNoPassGyqy.getJSXMGM().toString().trim());
+            in_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             in_xmmzb_etxt.setText(mNoPassGyqy.getMJZB());
             in_scmj_etxt.setText(String.valueOf(mNoPassGyqy.getTJMJ()));
-            if (in_sjqh_radio1.getText().equals(mNoPassGyqy.getBJBHQSJ()==null?"":mNoPassGyqy.getBJBHQSJ().toString().trim())) {
+            if (in_sjqh_radio1.getText().equals(mNoPassGyqy.getBJBHQSJ() == null ? "" : mNoPassGyqy.getBJBHQSJ().toString().trim())) {
                 in_sjqh_radio1.setChecked(true);
-            } else if (in_sjqh_radio2.getText().equals(mNoPassGyqy.getBJBHQSJ()==null?"":mNoPassGyqy.getBJBHQSJ().toString().trim())) {
+            } else if (in_sjqh_radio2.getText().equals(mNoPassGyqy.getBJBHQSJ() == null ? "" : mNoPassGyqy.getBJBHQSJ().toString().trim())) {
                 in_sjqh_radio2.setChecked(true);
             }
-            in_lsyg_etxt.setText(mNoPassGyqy.getLSYG() ==null ?"":mNoPassGyqy.getLSYG().toString().trim());
-            CodeTypeBean qysxB = codeType("QYSX",mNoPassGyqy.getQYSX() == null ? "":mNoPassGyqy.getQYSX().toString().trim());
+            in_lsyg_etxt.setText(mNoPassGyqy.getLSYG() == null ? "" : mNoPassGyqy.getLSYG().toString().trim());
+            CodeTypeBean qysxB = codeType("QYSX", mNoPassGyqy.getQYSX() == null ? "" : mNoPassGyqy.getQYSX().toString().trim());
             if (qysxB != null) {
                 in_qysx_etxt.setText(qysxB.getDMMC1());
                 in_qysx_dmz.setText(qysxB.getDMZ());
             }
-            in_hbpfwh_etxt.setText(mNoPassGyqy.getHBPZWH() == null ? "" :mNoPassGyqy.getHBPZWH().toString().trim());
-            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassGyqy.getISBHQ()==null?"":mNoPassGyqy.getISBHQ().toString().trim());
+            in_hbpfwh_etxt.setText(mNoPassGyqy.getHBPZWH() == null ? "" : mNoPassGyqy.getHBPZWH().toString().trim());
+            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassGyqy.getISBHQ() == null ? "" : mNoPassGyqy.getISBHQ().toString().trim());
             if (isBhqB != null) {
                 in_sfsbhq_etxt.setText(isBhqB.getDMMC1());
                 in_sfsbhq_dmz.setText(isBhqB.getDMZ());
             }
-            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassGyqy.getISHBYS() == null ?"":mNoPassGyqy.getISHBYS().toString().trim());
+            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassGyqy.getISHBYS() == null ? "" : mNoPassGyqy.getISHBYS().toString().trim());
             if (isHbysB != null) {
                 in_sftghbys_etxt.setText(isHbysB.getDMMC1());
                 in_sftghbys_dmz.setText(isHbysB.getDMZ());
             }
-            CodeTypeBean yxqkB = codeType("SCQK", mNoPassGyqy.getYXQK() == null ? "":mNoPassGyqy.getYXQK().toString().trim());
+            CodeTypeBean yxqkB = codeType("SCQK", mNoPassGyqy.getYXQK() == null ? "" : mNoPassGyqy.getYXQK().toString().trim());
             if (yxqkB != null) {
                 in_yxqk_etxt.setText(yxqkB.getDMMC1());
                 in_yxqk_dmz.setText(yxqkB.getDMZ());
@@ -762,12 +826,21 @@ public class IndustryEnterpriseActivity extends AppCompatActivity {
 
         }
     }
-    private CodeTypeBean codeType(String dmlb, String dmz){
+
+    private CodeTypeBean codeType(String dmlb, String dmz) {
         dbManager = new DBManager(context);
         String sql = "select * from codeType where dmlb = ? and dmz = ?";
-        String[] bindArgs = new String[]{dmlb,dmz};
-        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        String[] bindArgs = new String[]{dmlb, dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql, bindArgs, dbManager);
         return list.size() == 0 ? null : list.get(0);
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName){
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:"+fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 
 }

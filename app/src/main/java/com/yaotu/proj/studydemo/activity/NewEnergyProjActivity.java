@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -91,18 +92,18 @@ public class NewEnergyProjActivity extends AppCompatActivity {
     private EditText ne_sfsbhq_etxt;//是否涉保护区
     private EditText ne_sftghbys_etxt;//是否通过环保验收
     private EditText ne_ktscqk_etxt;//生产运行情况
-    private TextView ne_qysx_dmz,ne_sfsbhq_dmz,ne_sftghbys_dmz,ne_scqk_dmz;
+    private TextView ne_qysx_dmz, ne_sfsbhq_dmz, ne_sftghbys_dmz, ne_scqk_dmz;
     private EditText ne_syq_etxt;//实验区
     private EditText ne_hcq_etxt;//缓冲区
     private EditText ne_hxq_etxt;//核心区
     private EditText ne_lsqk_etxt;//整改落实情况
-    private TextView ne_hxq_txt,ne_hcq_txt,ne_syq_txt;
+    private TextView ne_hxq_txt, ne_hcq_txt, ne_syq_txt;
     private MapValueType valueType = null;
     private LinearLayout mapLayout;
     private MapView mapView;
     private BaiduMap baiduMap;
     private Location m_location;
-    private ImageButton dot_btn,reset_btn;//地图button
+    private ImageButton dot_btn, reset_btn;//地图button
     private TextView txt_showInfo;
     //----------一下内容国家统一下发
     private double jcdLongitude;//监测点经度
@@ -114,27 +115,57 @@ public class NewEnergyProjActivity extends AppCompatActivity {
     private DBManager dbManager;
     private InitMap initMap;
     private List<Long> times = new ArrayList<Long>();//触摸事件标志
-    private String bhqid,bhqmc,bhqjb,bhqjbdm;
+    private String bhqid, bhqmc, bhqjb, bhqjbdm;
 
     private ProgressDialog progressDialog;
     private final int UPLOADSUCCEED = 0X110;
     private final int UPLOADFAIL = 0X111;
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
+    private String IPURL;
+    private String dataUplocadSucceed;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
-                    showMessage("上传成功");
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    }else {
+                        showMessage("上传成功");
+                    }
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
                     showMessage("上传失败...");
                     break;
+                case UPLOADPICSUCCEED:
+                    showMessage("照片上传成功!");
+                    break;
+                case UPLOADPICFAIL:
+                    showMessage("照片上传失败!");
             }
             return false;
         }
     });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,8 +181,10 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         initView();
         initMethod();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
+        IPURL = getResources().getString(R.string.http_url);
     }
-    private void initView(){
+
+    private void initView() {
         ne_photo_img = (ImageView) findViewById(R.id.ne_photo_img);
         ne_canleImage = (TextView) findViewById(R.id.ne_canleImage);
         ne_bhqmc_etxt = (EditText) findViewById(R.id.ne_bhqmc_etxt);
@@ -190,7 +223,8 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         txt_showInfo = (TextView) findViewById(R.id.report1_textview_area);
         baiduMap = mapView.getMap();
     }
-    private void initMethod(){
+
+    private void initMethod() {
          /*
         * 打开相册或照相机
         * */
@@ -217,10 +251,10 @@ public class NewEnergyProjActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (ne_sjqh_radio1.getId() == checkedId) {
                     ne_sjqhStr = ne_sjqh_radio1.getText().toString().trim();
-                    Log.i(TAG, "onCheckedChanged: ------------始建前后----------->"+ne_sjqhStr);
+                    Log.i(TAG, "onCheckedChanged: ------------始建前后----------->" + ne_sjqhStr);
                 } else if (ne_sjqh_radio2.getId() == checkedId) {
                     ne_sjqhStr = ne_sjqh_radio2.getText().toString().trim();
-                    Log.i(TAG, "onCheckedChanged: ------------始建前后----------->"+ne_sjqhStr);
+                    Log.i(TAG, "onCheckedChanged: ------------始建前后----------->" + ne_sjqhStr);
                 }
             }
         });
@@ -230,7 +264,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         ne_sx_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,ne_qysx_dmz,ne_sx_etxt,"企业属性","QYSX");
+                CustomDialog cd = new CustomDialog(context, ne_qysx_dmz, ne_sx_etxt, "企业属性", "QYSX");
                 cd.showQksxDialog();
             }
         });
@@ -239,7 +273,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         ne_sfsbhq_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,ne_sfsbhq_dmz,ne_sfsbhq_etxt,"是否涉保护区","ISBHQ");
+                CustomDialog cd = new CustomDialog(context, ne_sfsbhq_dmz, ne_sfsbhq_etxt, "是否涉保护区", "ISBHQ");
                 cd.showQksxDialog();
             }
         });
@@ -248,7 +282,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         ne_sftghbys_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,ne_sftghbys_dmz,ne_sftghbys_etxt,"是否通过环保验收","ISHBYS");
+                CustomDialog cd = new CustomDialog(context, ne_sftghbys_dmz, ne_sftghbys_etxt, "是否通过环保验收", "ISHBYS");
                 cd.showQksxDialog();
             }
         });
@@ -257,7 +291,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         ne_ktscqk_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog cd = new CustomDialog(context,ne_scqk_dmz,ne_ktscqk_etxt,"生产运行情况","SCQK");
+                CustomDialog cd = new CustomDialog(context, ne_scqk_dmz, ne_ktscqk_etxt, "生产运行情况", "SCQK");
                 cd.showQksxDialog();
             }
         });
@@ -292,6 +326,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
     private final int OPEN_RESULT = 1; // 相机
     private final int PICK_RESULT = 2;// 本地相册
     private AlertDialog.Builder dialog;
+
     public void showPhotoDialog() {
         dialog = new AlertDialog.Builder(context);
         final String[] items = new String[]{"拍照", "从相册选择"};
@@ -302,14 +337,14 @@ public class NewEnergyProjActivity extends AppCompatActivity {
                     case 0:
                         Log.i("TAG", "onClick: 0" + items[which]);
                         intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(intent,OPEN_RESULT);
+                        startActivityForResult(intent, OPEN_RESULT);
                         dialog.dismiss();
                         break;
                     case 1:
                         Log.i("TAG", "onClick: 1" + items[which]);
                         intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
-                        startActivityForResult(intent,PICK_RESULT);
+                        startActivityForResult(intent, PICK_RESULT);
                         dialog.dismiss();
                         break;
                 }
@@ -320,6 +355,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
     }
 
     private String photoPath = "";
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -329,9 +365,9 @@ public class NewEnergyProjActivity extends AppCompatActivity {
                     //判断手机系统版本号
                     if (Build.VERSION.SDK_INT > 19) {
                         //4.4及以上系统使用这个方法处理图片
-                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
-                    }else {
-                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                        photoPath = HandleImage.handleImgeOnKitKat(context, data);
+                    } else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context, data);
                     }
                     Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
 
@@ -352,15 +388,13 @@ public class NewEnergyProjActivity extends AppCompatActivity {
                 Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 ne_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + "pic_" + fileName + ".jpg"));
-                intent.setData(uri);
-                context.sendBroadcast(intent);
+               upDateDcim(file.getName());
                 break;
             default:
                 break;
         }
     }
+
     //=================================map=========================================================
     public void getValueMethod(View view) {//获取值
         mapLayout.setVisibility(View.GONE);
@@ -368,25 +402,25 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         if (m_location != null) {
             switch (valueType) {
                 case centerCoordinate:
-                    ne_zxzb_etxt.setText(String.valueOf(m_location.getLongitude())+","+String.valueOf(m_location.getLatitude()));
+                    ne_zxzb_etxt.setText(String.valueOf(m_location.getLongitude()) + "," + String.valueOf(m_location.getLatitude()));
                     dot_btn.setVisibility(View.VISIBLE);
                     reset_btn.setVisibility(View.VISIBLE);
                     break;
                 case multiPoint:
-                    Log.i(TAG, "getValueMethod: --------------->"+ TempData.pointList.toString());
+                    Log.i(TAG, "getValueMethod: --------------->" + TempData.pointList.toString());
                     StringBuilder sb = new StringBuilder();
                     int len = TempData.pointList.size();
                     for (int i = 0; i < len; i++) {
-                        sb.append("["+TempData.latLngList.get(i).longitude+","+TempData.latLngList.get(i).latitude+"],");
-                        if (i == len-1) {
-                            sb.append("["+TempData.latLngList.get(i).longitude+","+TempData.latLngList.get(i).latitude+"]");
+                        sb.append("[" + TempData.latLngList.get(i).longitude + "," + TempData.latLngList.get(i).latitude + "],");
+                        if (i == len - 1) {
+                            sb.append("[" + TempData.latLngList.get(i).longitude + "," + TempData.latLngList.get(i).latitude + "]");
                         }
                     }
                     if (len == 0) {
                         ne_xmmzb_etxt.setText("未获得点...");
                     } else {
-                        ne_xmmzb_etxt.setText("[["+sb.toString()+"]]");
-                        ne_scmj_etxt.setText(String.format("%.2f",initMap.getArea()));
+                        ne_xmmzb_etxt.setText("[[" + sb.toString() + "]]");
+                        ne_scmj_etxt.setText(String.format("%.2f", initMap.getArea()));
                     }
                     initMap.reset();
 
@@ -395,44 +429,50 @@ public class NewEnergyProjActivity extends AppCompatActivity {
 
         }
     }
+
     public void resetMethod(View view) {//重置
         TempData.pointList.clear();
         baiduMap.clear();
         txt_showInfo.setText("");
     }
+
     private boolean isBaiduLatlng = true;
+
     public void getDotMethod(View view) {//打点
         m_location = initMap.getM_location();
         if (null != m_location) {
             LatLng latLng = initMap.latLngConVert(new LatLng(m_location.getLatitude(), m_location.getLongitude()));
             TempData.pointList.add(latLng);//存百度坐标点
             TempData.latLngList.add(new LatLng(m_location.getLatitude(), m_location.getLongitude()));//存设备经纬度坐标点
-            Log.i(TAG, "getDotMethod: ----------------->"+TempData.pointList.toString());
+            Log.i(TAG, "getDotMethod: ----------------->" + TempData.pointList.toString());
             if (TempData.pointList.size() < 3) {
                 initMap.drawDot(latLng);
-                showMessage("还需 "+(3 - TempData.pointList.size())+" 个点显示面");
+                showMessage("还需 " + (3 - TempData.pointList.size()) + " 个点显示面");
             } else {
-                initMap.drawPolyGonByGps(TempData.pointList,isBaiduLatlng);
+                initMap.drawPolyGonByGps(TempData.pointList, isBaiduLatlng);
             }
         } else {
             showMessage("获得经纬度失败...");
         }
     }
+
     public void moveCurrentPosition(View view) {//移动到当前位置
         m_location = initMap.getM_location();
         if (null != m_location) {
             initMap.localization(m_location);
-            baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(initMap.latLngConVert(new LatLng(m_location.getLatitude(),m_location.getLongitude())),16));
+            baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(initMap.latLngConVert(new LatLng(m_location.getLatitude(), m_location.getLongitude())), 16));
         } else {
             showMessage("暂时无法定位，请确保GPS打开或网络连接");
         }
     }
+
     //=============================================================================================
-    public void showMessage(String msg){
-        Toast.makeText(context,msg,Toast.LENGTH_SHORT).show();
+    public void showMessage(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
+
     //==========================提交、保存=========================================================
-    public void submitBtnMethod(View view){
+    public void submitBtnMethod(View view) {
         int netType = CheckNetwork.getNetWorkState(context);
         if (ne_qymc_etxt.getText().toString().trim().equals("")) {
             showMessage("企业名称不能为空!");
@@ -448,7 +488,8 @@ public class NewEnergyProjActivity extends AppCompatActivity {
 
 
     }
-    public void saveBtnMethod(View view){
+
+    public void saveBtnMethod(View view) {
         if (ne_qymc_etxt.getText().toString().trim().equals("")) {
             showMessage("企业名称不能为空!");
             return;
@@ -458,11 +499,11 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                NewEnergyBean newEnergyBean =getNewEnergyBean();
+                NewEnergyBean newEnergyBean = getNewEnergyBean();
                 if (IsExist(newEnergyBean)) {
                     showMessage("该企业在本地数据已经存在!");
                 } else {
-                    boolean inResult = insertNewEnergyQyInfo(newEnergyBean,0+"");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
+                    boolean inResult = insertNewEnergyQyInfo(newEnergyBean, 0 + "");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
                     if (inResult) {
                         showMessage("保存成功!");
                     } else {
@@ -480,13 +521,15 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         });
         dialog.create().show();
     }
+
     //============================================================================================
     private boolean threadFlag;
-    private void upload(){
+
+    private void upload() {
         //1.组织要提交的数据
         NewEnergyJsonBean jsonBean = new NewEnergyJsonBean();
         List<NewEnergyRecordBean> records = new ArrayList<>();
-        NewEnergyBean bean =getNewEnergyBean();
+        NewEnergyBean bean = getNewEnergyBean();
         NewEnergyRecordBean recordBean = new NewEnergyRecordBean();
         recordBean.setObjectid(jcdId);
         recordBean.setCenterpointx(jcdLongitude);
@@ -494,7 +537,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("05");
-        jsonBean.setYhdh(TempData.username);
+        jsonBean.setYhdh(TempData.yhdh);
         if (activityType.equals("add")) {
             jsonBean.setIschecked("21");
         } else {
@@ -504,14 +547,14 @@ public class NewEnergyProjActivity extends AppCompatActivity {
 
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
-        Log.i(TAG, "onClick: ------------新能源上传数据----------->"+jsonStr);
+        Log.i(TAG, "onClick: ------------新能源上传数据----------->" + jsonStr);
         //2.连接服务器上传
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage("是否上传数据？");
         dialog.setPositiveButton("是", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                threadFlag  = true;
+                threadFlag = true;
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setMessage("正在上传数据...");
                 progressDialog.setCanceledOnTouchOutside(false);
@@ -522,12 +565,11 @@ public class NewEnergyProjActivity extends AppCompatActivity {
                     }
                 });
                 progressDialog.show();
-                final String IPURL = getResources().getString(R.string.http_url);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(5*1000);
+                            Thread.sleep(2 * 1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -537,17 +579,14 @@ public class NewEnergyProjActivity extends AppCompatActivity {
                             if (response != null && response.code() == 200) {
                                 try {
                                     String responseValue = response.body().string();
-                                    if (responseValue.contains("success")) {
-                                        message.what = UPLOADSUCCEED;
-                                        myHandler.sendMessage(message);
-                                    } else {
-                                        message.what = UPLOADFAIL;
-                                        myHandler.sendMessage(message);
-                                    }
+                                    dataUplocadSucceed = responseValue;
+                                    message.what = UPLOADSUCCEED;
+                                    myHandler.sendMessage(message);
+                                    threadFlag = false;
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                                threadFlag = false;
+
                             } else {
                                 message.what = UPLOADFAIL;
                                 myHandler.sendMessage(message);
@@ -568,6 +607,31 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         });
         dialog.create().show();
     }
+    private void uploadPic() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = IPURL + "/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
+    }
+
     //==============================================================================================
 
     @Override
@@ -588,20 +652,20 @@ public class NewEnergyProjActivity extends AppCompatActivity {
             bhqjb = intent.getStringExtra("bhqjb");
             bhqjbdm = intent.getStringExtra("bhqjbdm");
             jcdId = intent.getStringExtra("placeid");
-            jcdLongitude =intent.getDoubleExtra("longitude",0);
-            jcdlatitude =intent.getDoubleExtra("latitude",0);
+            jcdLongitude = intent.getDoubleExtra("longitude", 0);
+            jcdlatitude = intent.getDoubleExtra("latitude", 0);
             //------------------------------
             ne_bhqmc_etxt.setText(bhqmc);
             ne_jb_etxt.setText(bhqjb);
-            ne_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            ne_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             jsxmID = "0";
         } else {
             mNoPassNewqy = (NoPassNewqy) intent.getSerializableExtra("bdData");
             bhqmc = intent.getStringExtra("bdBhqmc");
-            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdLongitude = intent.getDoubleExtra("bdjd", 0);
             jcdlatitude = intent.getDoubleExtra("bdwd", 0);
             jcdId = intent.getStringExtra("bdobjid");
-            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            Log.i(TAG, "onResume: ----------bhqmc:" + bhqmc);
             //--------------------------------------------
             setViewData();//获取更新数据
         }
@@ -612,8 +676,9 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         super.onDestroy();
         mapView.onDestroy();
     }
+
     //======================初始化表单数据=====================================================
-    public NewEnergyBean getNewEnergyBean(){
+    public NewEnergyBean getNewEnergyBean() {
         NewEnergyBean bean = new NewEnergyBean();
         StringBuilder sb = new StringBuilder();
         if (!ne_hxq_etxt.getText().toString().trim().equals("")) {
@@ -625,7 +690,7 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         if (!ne_syq_etxt.getText().toString().trim().equals("")) {
             sb.append(ne_syq_txt.getText().toString().trim() + ":" + ne_syq_etxt.getText().toString().trim());
         }
-        String ybhqwzgx =sb.toString();//与保护区位置关系
+        String ybhqwzgx = sb.toString();//与保护区位置关系
         bean.setBhqid(bhqid);
         bean.setBhqmc(bhqmc);
         bean.setJsxmjb(bhqjbdm);//ne_jb_etxt.getText().toString().trim()
@@ -645,13 +710,13 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         bean.setYbhqgx(ybhqwzgx);
         bean.setZgcs(ne_lsqk_etxt.getText().toString().trim());
         String centerpoint = ne_zxzb_etxt.getText().toString().trim();
-        String pointx ="";
+        String pointx = "";
         String pointy = "";
         if (!"".equals(centerpoint)) {
-            Log.i(TAG, "getIndustryBean: ------centerpoint------->"+centerpoint);
+            Log.i(TAG, "getIndustryBean: ------centerpoint------->" + centerpoint);
             int temp = centerpoint.indexOf(",");
             pointx = centerpoint.substring(0, temp);
-            pointy = centerpoint.substring(temp+1);
+            pointy = centerpoint.substring(temp + 1);
         }
         bean.setCenterpointx(pointx);
         bean.setCenterpointy(pointy);
@@ -668,25 +733,27 @@ public class NewEnergyProjActivity extends AppCompatActivity {
 
         bean.setPhotoPath(photoPath);
         bean.setPlaceid(jcdId);
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         return bean;
     }
+
     //-----------------查询本地数据库是否已经存在该企业名称--------------------------------
-    private boolean IsExist(NewEnergyBean bean){
+    private boolean IsExist(NewEnergyBean bean) {
         QueryLocalTableData query = new QueryLocalTableData(context);
-        String sql ="select * from NewEnergyqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
-        String[] strs = new String[]{bean.getBhqid(),bean.getJsxmmc(),bean.getUsername()};
-        List<NewEnergyBean> list = query.queryNewEnergyQyInfos(sql,strs);
+        String sql = "select * from NewEnergyqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
+        String[] strs = new String[]{bean.getBhqid(), bean.getJsxmmc(), bean.getUsername()};
+        List<NewEnergyBean> list = query.queryNewEnergyQyInfos(sql, strs);
         if (list != null) {
-            if (list.size() >0) {
+            if (list.size() > 0) {
                 return true;//存在
             }
         }
         return false;//不存在
     }
+
     /*插入本地数据
     * */
-    private boolean insertNewEnergyQyInfo(NewEnergyBean bean,String upState){
+    private boolean insertNewEnergyQyInfo(NewEnergyBean bean, String upState) {
 
         boolean result = false;
         if (bean != null) {
@@ -708,47 +775,48 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
 
     }
+
     //==============================================================================================
-    private void setViewData(){
+    private void setViewData() {
         if (mNoPassNewqy != null) {
             bhqid = mNoPassNewqy.getBHQID();
             jsxmID = mNoPassNewqy.getJSXMID();
             ne_bhqmc_etxt.setText(bhqmc);
             ne_qymc_etxt.setText(mNoPassNewqy.getJSXMMC());
-            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassNewqy.getJSXMJB() == null ? "":mNoPassNewqy.getJSXMJB().toString().trim());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mNoPassNewqy.getJSXMJB() == null ? "" : mNoPassNewqy.getJSXMJB().toString().trim());
             if (bhqjbB != null) {
                 ne_jb_etxt.setText(bhqjbB.getDMMC1());
                 bhqjbdm = bhqjbB.getDMZ();
             }
             ne_lx_etxt.setText(mNoPassNewqy.getJSXMLX());
             ne_gm_etxt.setText(mNoPassNewqy.getJSXMGM());
-            if (ne_sjqh_radio1.getText().equals(mNoPassNewqy.getBJBHQSJ()==null?"":mNoPassNewqy.getBJBHQSJ().toString().trim())) {
+            if (ne_sjqh_radio1.getText().equals(mNoPassNewqy.getBJBHQSJ() == null ? "" : mNoPassNewqy.getBJBHQSJ().toString().trim())) {
                 ne_sjqh_radio1.setChecked(true);
-            } else if (ne_sjqh_radio2.getText().equals(mNoPassNewqy.getBJBHQSJ()==null?"":mNoPassNewqy.getBJBHQSJ().toString().trim())) {
+            } else if (ne_sjqh_radio2.getText().equals(mNoPassNewqy.getBJBHQSJ() == null ? "" : mNoPassNewqy.getBJBHQSJ().toString().trim())) {
                 ne_sjqh_radio2.setChecked(true);
             }
-            CodeTypeBean qysxB = codeType("QYSX", mNoPassNewqy.getQYSX()==null?"":mNoPassNewqy.getQYSX().toString().trim());
+            CodeTypeBean qysxB = codeType("QYSX", mNoPassNewqy.getQYSX() == null ? "" : mNoPassNewqy.getQYSX().toString().trim());
             if (qysxB != null) {
                 ne_qysx_dmz.setText(qysxB.getDMZ());
                 ne_sx_etxt.setText(qysxB.getDMMC1());
             }
             ne_hbpfwh_etxt.setText(mNoPassNewqy.getHBPZWH());
-            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassNewqy.getISBHQ()==null?"":mNoPassNewqy.getISBHQ().toString().trim());
+            CodeTypeBean isBhqB = codeType("ISBHQ", mNoPassNewqy.getISBHQ() == null ? "" : mNoPassNewqy.getISBHQ().toString().trim());
             if (isBhqB != null) {
                 ne_sfsbhq_etxt.setText(isBhqB.getDMMC1());
                 ne_sfsbhq_dmz.setText(isBhqB.getDMZ());
             }
-            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassNewqy.getISHBYS()==null?"":mNoPassNewqy.getISHBYS().toString().trim());
+            CodeTypeBean isHbysB = codeType("ISHBYS", mNoPassNewqy.getISHBYS() == null ? "" : mNoPassNewqy.getISHBYS().toString().trim());
             if (isHbysB != null) {
                 ne_sftghbys_etxt.setText(isHbysB.getDMMC1());
                 ne_sftghbys_dmz.setText(isHbysB.getDMZ());
             }
-            CodeTypeBean scqkB = codeType("SCQK", mNoPassNewqy.getSCQK()==null?"":mNoPassNewqy.getSCQK().toString().trim());
+            CodeTypeBean scqkB = codeType("SCQK", mNoPassNewqy.getSCQK() == null ? "" : mNoPassNewqy.getSCQK().toString().trim());
             if (scqkB != null) {
                 ne_scqk_dmz.setText(scqkB.getDMZ());
                 ne_ktscqk_etxt.setText(scqkB.getDMMC1());
             }
-            ne_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            ne_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             ne_xmmzb_etxt.setText(mNoPassNewqy.getMJZB());
             ne_scmj_etxt.setText(String.valueOf(mNoPassNewqy.getTJMJ()));
             ne_syq_etxt.setText(String.valueOf(mNoPassNewqy.getSYMJ()));
@@ -758,11 +826,19 @@ public class NewEnergyProjActivity extends AppCompatActivity {
         }
     }
 
-    private  CodeTypeBean codeType(String dmlb,String dmz){
+    private CodeTypeBean codeType(String dmlb, String dmz) {
         dbManager = new DBManager(context);
         String sql = "select * from codeType where dmlb = ? and dmz = ?";
-        String[] bindArgs = new String[]{dmlb,dmz};
-        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        String[] bindArgs = new String[]{dmlb, dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql, bindArgs, dbManager);
         return list.size() == 0 ? null : list.get(0);
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:" + fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }

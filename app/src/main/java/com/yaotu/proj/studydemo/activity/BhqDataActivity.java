@@ -31,6 +31,8 @@ import com.yaotu.proj.studydemo.R;
 import com.yaotu.proj.studydemo.bean.BhqInfoBean;
 import com.yaotu.proj.studydemo.bean.CodeTypeBean;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
+import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
+import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 
@@ -51,6 +53,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
     private EditText bhq_Query_etxt;
     private BaseAdapter my_Adapter;
     private List<BhqInfoBean> listData;
+    private List<CodeTypeBean> listCode;
     private DBManager dbManager;
     private Cursor bhqCursor;
     private Handler myHandler = new Handler(){
@@ -86,7 +89,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         /*demo_Data*/
         dbManager = new DBManager(context);
         my_Adapter = new my_BaseAdapter();
-        listData = loadDataBySqlLite("select * from bhqInfo",null);
+        listData = loadDataBySqlLite("select * from bhqInfo where yhdh = ?",new String[]{TempData.yhdh});
         listView.setAdapter(my_Adapter);
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeColors(this.getResources().getColor(R.color.blue));
@@ -115,10 +118,10 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String args = bhq_Query_etxt.getText().toString().trim();
                 if ("".equals(args)) {
-                    listData = loadDataBySqlLite("select * from bhqInfo",null);
+                    listData = loadDataBySqlLite("select * from bhqInfo where yhdh = ?", new String[]{TempData.yhdh});
                     my_Adapter.notifyDataSetChanged();
                 } else {
-                    listData = loadDataBySqlLite("select * from bhqInfo where bhq_name like ? ",new String[]{"%"+args+"%"});
+                    listData = loadDataBySqlLite("select * from bhqInfo where bhq_name like ? and yhdh = ?",new String[]{"%"+args+"%",TempData.yhdh});
                     my_Adapter.notifyDataSetChanged();
                 }
 
@@ -179,7 +182,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         * 2.判断listData是否有值: 有值listData.size() > 0,根据本地数据展示ListView;
         *                        无值listData.size() = 0,请求服务器，从服务器获取数据，添加到本地数据库中
         * */
-        listData = loadDataBySqlLite("select * from bhqInfo",null);
+        listData = loadDataBySqlLite("select * from bhqInfo where yhdh = ? ",new String[]{TempData.yhdh});
         int dataNum = 0;
         if (listData != null) {
             dataNum = listData.size();
@@ -224,7 +227,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         if (listResult != null) {
             int len = listResult.size();
             for (int i = 0 ; i < len ; i++) {
-                dbManager.updateBySql("insert into bhqInfo(bhq_id,bhq_name,bhq_level,bhq_level_dm) values(?,?,?,?)",new Object[]{listResult.get(i).getBHQID(),listResult.get(i).getBHQNAME(),listResult.get(i).getBHQLEVEL(),listResult.get(i).getBHQLEVELDM()});
+                dbManager.updateBySql("insert into bhqInfo(bhq_id,bhq_name,bhq_level,bhq_level_dm,yhdh) values(?,?,?,?,?)",new Object[]{listResult.get(i).getBHQID(),listResult.get(i).getBHQNAME(),listResult.get(i).getBHQLEVEL(),listResult.get(i).getBHQLEVELDM(), TempData.yhdh});
             }
         }
     }
@@ -241,28 +244,38 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
         }
 
     }
-    private boolean removeDataBySqlLite(){
-        boolean  result = dbManager.deleteTableData("bhqInfo",null,null);
-        dbManager.deleteTableData("codeType", null, null);
-        return result;
+    private boolean removeDataBySqlLite() {
+        if (dbManager == null) {
+            dbManager = new DBManager(context);
+        }
+        boolean result1 = dbManager.deleteTableData("bhqInfo", "yhdh = ? ", new String[]{TempData.yhdh});
+        boolean result2 = dbManager.deleteTableData("codeType", null, null);
+        boolean result3 = dbManager.deleteTableData("bhqpointInfo", "yhdh = ?", new String[]{TempData.yhdh});
+        if (result1 && result2 && result3) {
+            return true;
+        }
+        return false;
     }
     //----------------------联网获取数据---------------------------------
-    private void findBhqInfosByInternet(){
+    private void findBhqInfosByInternet() {
         final String ipUrl = getResources().getString(R.string.http_url);
         new Thread(new Runnable() {
             @Override
             public void run() {//获取保护区基本信息数据
 
-                Response response = ParseIntentData.getDataGetByString(ipUrl+"/bhqService/BhqJsxm/GetBhqBasicInfoJson");
+                //Response response = ParseIntentData.getDataGetByString(ipUrl+"/bhqService/BhqJsxm/GetBhqBasicInfoJson");
+                String data = "{\"yhdh\":\"" + TempData.yhdh + "\"}";
+                Response response = ParseIntentData.getDataPostByJson(ipUrl + "/bhqService/BhqJsxm/GetBhqBasicInfo", data);
                 Gson gson = new Gson();
-                Type type = new TypeToken<List<BhqInfoBean>>(){}.getType();
+                Type type = new TypeToken<List<BhqInfoBean>>() {
+                }.getType();
                 try {
                     if (response != null && response.code() == 200) {
                         listData = gson.fromJson(response.body().string(), type);
-                        Log.i(TAG, "run: -------------->success:"+response.code()+listData.toString());
+                        Log.i(TAG, "run: -------------->success:" + response.code() + listData.toString());
                         insertDataBySqlLite(listData);
                         myHandler.sendEmptyMessage(REFRESH_INTENT);
-                        Log.i(TAG, "run: -------------->"+response.code());
+                        Log.i(TAG, "run: -------------->" + response.code());
                     }
 
                 } catch (IOException e) {
@@ -270,25 +283,30 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
                 }
             }
         }).start();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {//获取类别信息
-                List<CodeTypeBean> listCodeType = new ArrayList<CodeTypeBean>();
-                Response response = ParseIntentData.getDataGetByString(ipUrl + "/bhqService/BhqJsxm/GetAllRelatedCodeDetails");
-                Gson gson = new Gson();
-                Type type = new TypeToken<List<CodeTypeBean>>() {
-                }.getType();
-                try {
-                    if (response != null && response.code() == 200) {
-                       listCodeType = gson.fromJson(response.body().string(), type);
-                        Log.i(TAG, "run: ---------listCodeType----->success:"+response.code());
-                       insertCodeTypeBySql(listCodeType);
+        QueryLocalTableData queryLocalTableData = new QueryLocalTableData(context);
+        listCode = queryLocalTableData.loadAllCodeDataBySqlLite("select * from codeType", null);
+        if (listCode.size() <= 0) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {//获取类别信息
+                    List<CodeTypeBean> listCodeType = new ArrayList<CodeTypeBean>();
+                    Response response = ParseIntentData.getDataGetByString(ipUrl + "/bhqService/BhqJsxm/GetAllRelatedCodeDetails");
+                    Gson gson = new Gson();
+                    Type type = new TypeToken<List<CodeTypeBean>>() {
+                    }.getType();
+                    try {
+                        if (response != null && response.code() == 200) {
+                            listCodeType = gson.fromJson(response.body().string(), type);
+                            Log.i(TAG, "run: ---------listCodeType----->success:" + response.code());
+                            insertCodeTypeBySql(listCodeType);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-        }).start();
+            }).start();
+        }
+
     }
     //==============================================================================================
 
@@ -309,7 +327,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
                     public void onClick(DialogInterface dialog, int which) {
                         boolean result = removeDataBySqlLite();
                         if (result) {
-                            showMessage("删除成功...");
+                            showMessage("删除成功!");
                             listData.clear();
                             my_Adapter.notifyDataSetChanged();
                         } else {

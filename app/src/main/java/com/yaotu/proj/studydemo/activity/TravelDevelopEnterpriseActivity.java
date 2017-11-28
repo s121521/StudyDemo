@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -116,17 +117,47 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private final int UPLOADSUCCEED = 0X110;
     private final int UPLOADFAIL = 0X111;
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
+    private String IPURL;
+    private String dataUplocadSucceed;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
-                    showMessage("上传成功");
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    }else {
+                        showMessage("上传成功");
+                    }
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
                     showMessage("上传失败...");
+                    break;
+                case UPLOADPICSUCCEED:
+                    showMessage("照片上传成功!");
+                    break;
+                case UPLOADPICFAIL:
+                    showMessage("照片上传失败!");
                     break;
             }
             return false;
@@ -148,6 +179,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         initView();
         initMethod();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
+        IPURL = getResources().getString(R.string.http_url);
     }
 
     private void initView() {
@@ -427,10 +459,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
                 Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 tr_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + "pic_" + fileName + ".jpg"));
-                intent.setData(uri);
-                context.sendBroadcast(intent);
+                upDateDcim(file.getName());
                 break;
             default:
                 break;
@@ -499,7 +528,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("04");
-        jsonBean.setYhdh(TempData.username);
+        jsonBean.setYhdh(TempData.yhdh);
         if (activityType.equals("add")) {
             jsonBean.setIschecked("21");
         } else {
@@ -526,12 +555,11 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
                     }
                 });
                 progressDialog.show();
-                final String IPURL = getResources().getString(R.string.http_url);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(5*1000);
+                            Thread.sleep(2*1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -541,17 +569,14 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
                         if (response != null && response.code() == 200) {
                             try {
                                 String responseValue = response.body().string();
-                                if (responseValue.contains("success")) {
-                                    message.what = UPLOADSUCCEED;
-                                    myHandler.sendMessage(message);
-                                } else{
-                                    message.what = UPLOADFAIL;
-                                    myHandler.sendMessage(message);
-                                }
+                                dataUplocadSucceed = responseValue;
+                                message.what = UPLOADSUCCEED;
+                                myHandler.sendMessage(message);
+                                threadFlag = false;
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            threadFlag = false;
+
                         } else {
                             message.what = UPLOADFAIL;
                             myHandler.sendMessage(message);
@@ -573,6 +598,30 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         });
         dialog.create().show();
 
+    }
+    private void uploadPic(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = IPURL+"/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
     }
 
     //============================================================================================
@@ -681,7 +730,7 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         bean.setPhotoPath(photoPath);
         bean.setPlaceid(jcdId);
        // bean.setIschecked("21");
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         return bean;
     }
 
@@ -778,5 +827,13 @@ public class TravelDevelopEnterpriseActivity extends AppCompatActivity {
         String[] bindArgs = new String[]{dmlb,dmz};
         List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
         return list.size() == 0 ? null : list.get(0);
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:" + fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }

@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private MapView mapView;
     private final int REQUEST_CODE_DATAACTIVITY = 0x000001;
     private final int INFO_SHOW_REQUEST_CODE = 0x000002;
-    private String username,placeid;
+    private String yhdh,placeid,yhmc;
     private Intent intent;
     private Point wgspoint;
     private Point mapPoint;
@@ -174,15 +174,17 @@ public class MainActivity extends AppCompatActivity {
         localLayerImgBtn = (ImageButton) findViewById(R.id.localLayerImgBtn);
         //---------------
         intent = getIntent();
-        username = intent.getStringExtra("username");
+        yhdh = intent.getStringExtra("yhdh");
+        yhmc = intent.getStringExtra("yhmc");
         NetCode = CheckNetwork.getNetWorkState(context);
-        TempData.username = username;
-        Log.i(TAG, "onCreate:---------------用户登录ID:"+TempData.username);
+        TempData.yhdh = yhdh;
+        TempData.yhmc = yhmc;
+        Log.i(TAG, "onCreate:---------------用户登录ID:"+TempData.yhdh);
         dbManager = new DBManager(context);
         //---------------------------
-        localImgFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/arcgisImg");
-        localLayerFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/arcgisLayer");
-        localFileFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/arcgisFile");
+        localImgFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/jczApp/arcgisImg");
+        localLayerFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/jczApp/arcgisLayer");
+        localFileFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/jczApp/arcgisFile");
         if (!localImgFolder.exists()) {
             localImgFolder.mkdirs();
         }
@@ -259,31 +261,35 @@ public class MainActivity extends AppCompatActivity {
                 baiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
-                        // 获得marker中的数据
-                        BhqHbhcBean info = (BhqHbhcBean) marker.getExtraInfo().get("info");
-                        //生成一个View用户在地图中显示InfoWindow
-                        LinearLayout markerLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.baidu_infowindow, null);
-                        ViewHolder viewHolder = null;
-                        if (markerLayout.getTag() == null) {
-                            viewHolder = new ViewHolder();
-                            viewHolder.info_window_id_etxt = (EditText) markerLayout.findViewById(R.id.info_window_etxt_id);
-                            viewHolder.info_window_jd_etxt = (EditText) markerLayout.findViewById(R.id.info_window_jd_etxt);
-                            viewHolder.info_window_wd_etxt = (EditText) markerLayout.findViewById(R.id.info_window_wd_etxt);
-                            markerLayout.setTag(viewHolder);
+                        if (FlagBean.dcFlag == true || FlagBean.scFlag == true) {
+                        } else {
+                            // 获得marker中的数据
+                            BhqHbhcBean info = (BhqHbhcBean) marker.getExtraInfo().get("info");
+                            //生成一个View用户在地图中显示InfoWindow
+                            LinearLayout markerLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.baidu_infowindow, null);
+                            ViewHolder viewHolder = null;
+                            if (markerLayout.getTag() == null) {
+                                viewHolder = new ViewHolder();
+                                viewHolder.info_window_id_etxt = (EditText) markerLayout.findViewById(R.id.info_window_etxt_id);
+                                viewHolder.info_window_jd_etxt = (EditText) markerLayout.findViewById(R.id.info_window_jd_etxt);
+                                viewHolder.info_window_wd_etxt = (EditText) markerLayout.findViewById(R.id.info_window_wd_etxt);
+                                markerLayout.setTag(viewHolder);
+                            }
+                            viewHolder = (ViewHolder) markerLayout.getTag();
+                            viewHolder.info_window_id_etxt.setText(String.valueOf(info.getOBJECTID()));
+                            viewHolder.info_window_jd_etxt.setText(String.valueOf(info.getJD()));
+                            viewHolder.info_window_wd_etxt.setText(String.valueOf(info.getWD()));
+                            TempData.placeid = String.valueOf(info.getOBJECTID());//记录监测点ID
+                            Log.i(TAG, "onMarkerClick: (((((((((("+TempData.placeid+"-------->"+TempData.yhdh);
+                            TempData.longitude = info.getJD();//记录监测点经度
+                            TempData.latitude = info.getWD();//记录监测点纬度
+                            //初始化infowindow
+                            InfoWindow infoWindow = new InfoWindow(markerLayout, marker.getPosition(), -80);
+                            baiduMap.showInfoWindow(infoWindow);
+                            //移动到当前点
+                            baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLng(marker.getPosition()));
                         }
-                        viewHolder = (ViewHolder) markerLayout.getTag();
-                        viewHolder.info_window_id_etxt.setText(String.valueOf(info.getOBJECTID()));
-                        viewHolder.info_window_jd_etxt.setText(String.valueOf(info.getJD()));
-                        viewHolder.info_window_wd_etxt.setText(String.valueOf(info.getWD()));
-                        TempData.placeid = String.valueOf(info.getOBJECTID());//记录监测点ID
-                        Log.i(TAG, "onMarkerClick: (((((((((("+TempData.placeid+"-------->"+TempData.username);
-                        TempData.longitude = info.getJD();//记录监测点经度
-                        TempData.latitude = info.getWD();//记录监测点纬度
-                        //初始化infowindow
-                        InfoWindow infoWindow = new InfoWindow(markerLayout, marker.getPosition(), -80);
-                        baiduMap.showInfoWindow(infoWindow);
-                        //移动到当前点
-                        baiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLng(marker.getPosition()));
+
                         return false;
                     }
                 });
@@ -352,9 +358,11 @@ public class MainActivity extends AppCompatActivity {
         String report5_name = this.getString(R.string.submenu_report5_name);
         String report6_name = this.getString(R.string.submenu_report6_name);
         String report7_name = this.getString(R.string.submenu_report7_name);
+        String report8_name = this.getString(R.string.submenu_report8_name);
         //加载自定义菜单
         //String jsonStr = "{\"custommenu\":[{\"title\":\"" + context.getString(R.string.menu_report) + "\",\"sub\":[{\"title\":\"" + report1_name + "\"},{\"title\":\"" + report2_name + "\"},{\"title\":\"" + report3_name + "\"},{\"title\":\"" + report4_name + "\"},{\"title\":\"" + report5_name + "\"},{\"title\":\"" + report6_name + "\"},{\"title\":\"" + report7_name + "\"}]},{\"title\":\"" + context.getString(R.string.menu_function) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_gps) + "\"},{\"title\":\"" + context.getString(R.string.submenu_way_analyze) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_clean) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_layer) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_look) + "\",\"sub\":[]}]}";
-        String jsonStr = "{\"custommenu\":[{\"title\":\"" + context.getString(R.string.menu_report) + "\",\"sub\":[{\"title\":\"" + report1_name + "\"},{\"title\":\"" + report2_name + "\"},{\"title\":\"" + report3_name + "\"},{\"title\":\"" + report4_name + "\"},{\"title\":\"" + report5_name + "\"},{\"title\":\"" + report6_name + "\"},{\"title\":\"" + report7_name + "\"}]},{\"title\":\"" + context.getString(R.string.menu_function) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_gps) + "\"},{\"title\":\"" + context.getString(R.string.submenu_way_analyze) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_clean) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_layer) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_look) + "\",\"sub\":[{\"title\":\""+context.getString(R.string.submenu_backdata)+"\"},{\"title\":\""+context.getString(R.string.submenu_complete)+"\"}]}]}";
+        //String jsonStr = "{\"custommenu\":[{\"title\":\"" + context.getString(R.string.menu_report) + "\",\"sub\":[{\"title\":\"" + report1_name + "\"},{\"title\":\"" + report2_name + "\"},{\"title\":\"" + report3_name + "\"},{\"title\":\"" + report4_name + "\"},{\"title\":\"" + report5_name + "\"},{\"title\":\"" + report6_name + "\"},{\"title\":\"" + report7_name + "\"}]},{\"title\":\"" + context.getString(R.string.menu_function) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_gps) + "\"},{\"title\":\"" + context.getString(R.string.submenu_way_analyze) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_clean) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_layer) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_look) + "\",\"sub\":[{\"title\":\""+context.getString(R.string.submenu_backdata)+"\"},{\"title\":\""+context.getString(R.string.submenu_complete)+"\"}]}]}";
+        String jsonStr = "{\"custommenu\":[{\"title\":\"" + context.getString(R.string.menu_report) + "\",\"sub\":[{\"title\":\"" + report8_name + "\"}]},{\"title\":\"" + context.getString(R.string.menu_function) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_gps) + "\"},{\"title\":\"" + context.getString(R.string.submenu_way_analyze) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_clean) + "\",\"sub\":[{\"title\":\"" + context.getString(R.string.submenu_layer) + "\"}]},{\"title\":\"" + context.getString(R.string.menu_look) + "\",\"sub\":[{\"title\":\""+context.getString(R.string.submenu_backdata)+"\"},{\"title\":\""+context.getString(R.string.submenu_complete)+"\"}]}]}";
         try {
             creatCustomMenu(new JSONObject(jsonStr));
         } catch (JSONException e) {
@@ -486,6 +494,7 @@ public class MainActivity extends AppCompatActivity {
                 initBaiduView(baidu_layout);
                 arcgis_zoom_in.setVisibility(View.INVISIBLE);
                 arcgis_zoom_out.setVisibility(View.INVISIBLE);
+                localLayerImgBtn.setVisibility(View.GONE);
                 btnsetlocalvalue.setVisibility(View.GONE);
                 btnsavelocalvalue.setVisibility(View.GONE);
                 if (null != m_location && locdisMag != null) {
@@ -521,7 +530,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setItems(localImgs, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                       localImgName =  localImgs[which];
+                        localImgName =  localImgs[which];
                         txt_showInfo.setText("");
                         frameLayout.removeAllViews();
                         LinearLayout localLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.arcgis_mapview, null);
@@ -534,6 +543,7 @@ public class MainActivity extends AppCompatActivity {
                         btnsetlocalvalue.setVisibility(View.GONE);
                         btnsavelocalvalue.setVisibility(View.GONE);
                         TempData.temp_graphicslayer = null;
+                        localTiledOtherLayer = null;
                     }
                 });
                 builder.show();
@@ -709,7 +719,9 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         mapView_baidu.onPause();
         mapView.pause();
-        locMag.removeUpdates(m_locationListener);
+        if (locMag != null) {
+            locMag.removeUpdates(m_locationListener);
+        }
     }
 
     @Override
@@ -725,6 +737,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView_baidu.onDestroy();
+        if (locMag != null) {
+            locMag.removeUpdates(m_locationListener);
+        }
     }
 
     @Override
@@ -872,6 +887,19 @@ public class MainActivity extends AppCompatActivity {
                                 //boolean  result = dbManager.deleteTableData("bhqpointInfo","bhqid = ? ",new String[]{bhqid});//防止重复插入
                                 insertDataBySqlLite(hbhc_list);//插入本地数据库
                                 if (mapType != 1) {
+                                    List<Graphic> list = new ArrayList<>();
+                                    for (int i = 0; i < hbhc_list.size(); i++) {
+                                        Map<String, Object> attributes = new HashMap<>();
+                                        attributes.put("OBJECTID", hbhc_list.get(i).getOBJECTID());
+                                        attributes.put("JD", hbhc_list.get(i).getJD());
+                                        attributes.put("WD", hbhc_list.get(i).getWD());
+                                        Point _wgspoint = new Point(hbhc_list.get(i).getJD(), hbhc_list.get(i).getWD());
+                                        //Log.i(TAG, "findBhqhcdByBhqid: ??---------"+mapView+"????????"+mapView.getSpatialReference());
+                                        Point _spoint = (Point) GeometryEngine.project(_wgspoint, SpatialReference.create(SpatialReference.WKID_WGS84), mapView.getSpatialReference());
+                                        list.add(new Graphic(_spoint, null,attributes));
+                                    }
+
+                                    arcgis_graphics = list.toArray(new Graphic[]{});
                                     message.what = DRAW_ARCGIS_MAP_GRAYPHIC;
                                 } else {
                                     message.what = DRAW_BAIDU_MAP_POINT;
@@ -1125,8 +1153,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.i(TAG, "handleMessage: -------------hbhc_list-------------->" + hbhc_list.size());
                     break;
                 case DRAW_ARCGIS_MAP_GRAYPHIC:
-                    if (arcgis_graphics.length == 0) {
+                    if ( arcgis_graphics.length == 0) {
                         showMessage("该保护区下没有监测点!");
+                        txt_pName.setText("");
                     } else {
                         if (TempData.temp_graphicslayer!=null) {
                             if (mapView.getLayers().length > 2) {
@@ -1605,7 +1634,7 @@ public class MainActivity extends AppCompatActivity {
         if (listResult != null) {
             int len = listResult.size();
             for (int i = 0 ; i < len ; i++) {
-                dbManager.updateBySql("insert into bhqpointInfo(objectid,wd,jd,bhqid) values(?,?,?,?)",new Object[]{listResult.get(i).getOBJECTID(),listResult.get(i).getWD(),listResult.get(i).getJD(),listResult.get(i).getBHQID()});
+                dbManager.updateBySql("insert into bhqpointInfo(objectid,wd,jd,bhqid,yhdh) values(?,?,?,?,?)",new Object[]{listResult.get(i).getOBJECTID(),listResult.get(i).getWD(),listResult.get(i).getJD(),listResult.get(i).getBHQID(),TempData.yhdh});
             }
         }
     }

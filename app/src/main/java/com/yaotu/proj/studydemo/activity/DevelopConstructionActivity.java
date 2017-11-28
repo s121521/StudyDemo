@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -87,15 +88,15 @@ public class DevelopConstructionActivity extends AppCompatActivity {
     private EditText de_hbpfwh_etxt;//环保批复文号
 
     private EditText de_sfsbhq_etxt;//是否涉保护区
-    private TextView de_sfsbhq_dmz,de_sftghbys_dmz,de_scqk_dmz;
+    private TextView de_sfsbhq_dmz, de_sftghbys_dmz, de_scqk_dmz;
     private EditText de_sftghbys_etxt;//是否通过环保验收
     private EditText de_scqk_etxt;//生产情况
     private EditText de_syq_etxt;//实验区面积
     private EditText de_hcq_etxt;//缓冲区面积
     private EditText de_hxq_etxt;//核心区面积
     private EditText de_lsqk_etxt;//整改落实情况
-    private String bhqid,bhqmc,bhqjb,bhqjbdm;
-    private TextView de_hxq_txt,de_hcq_txt,de_syq_txt;
+    private String bhqid, bhqmc, bhqjb, bhqjbdm;
+    private TextView de_hxq_txt, de_hcq_txt, de_syq_txt;
     private LinearLayout mapLayout;
     private MapView mapView;
     private BaiduMap baiduMap;
@@ -114,25 +115,55 @@ public class DevelopConstructionActivity extends AppCompatActivity {
     private NoPassKfjsqy mPassKfjsqy;
     private String jsxmID = "0";//添加为0；更行为原有id;
     private DBManager dbManager;
+    private String dataUplocadSucceed;
     private ProgressDialog progressDialog;
-    private final int UPLOADSUCCEED = 0X110;
-    private final int UPLOADFAIL = 0X111;
+    private final int UPLOADSUCCEED = 0X000;
+    private final int UPLOADFAIL = 0X001;
+    private final int UPLOADPICSUCCEED = 0X002;//照片上传成功
+    private final int UPLOADPICFAIL = 0X003;//照片上传失败
+    private String IPURL;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case UPLOADSUCCEED:
                     progressDialog.dismiss();
-                    showMessage("上传成功");
+                    if (!"".equals(photoPath)) {//上传相片
+                        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(context);
+                        builder.setMessage("数据上传成功！是否上传相片?");
+                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                uploadPic();
+
+                            }
+                        });
+                        builder.show();
+                    }else {
+                        showMessage("上传成功");
+                    }
                     break;
                 case UPLOADFAIL:
                     progressDialog.dismiss();
                     showMessage("上传失败...");
                     break;
+                case UPLOADPICSUCCEED:
+                    showMessage("照片上传成功!");
+                    break;
+                case UPLOADPICFAIL:
+                    showMessage("照片上传失败!");
             }
             return false;
         }
     });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,6 +179,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        IPURL = getResources().getString(R.string.http_url);
     }
 
     private void initView() {
@@ -248,7 +280,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         de_sfsbhq_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog dialog = new CustomDialog(context,de_sfsbhq_dmz,de_sfsbhq_etxt, "是否涉保护区", "ISBHQ");
+                CustomDialog dialog = new CustomDialog(context, de_sfsbhq_dmz, de_sfsbhq_etxt, "是否涉保护区", "ISBHQ");
                 dialog.showQksxDialog();
             }
         });
@@ -256,7 +288,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         de_sftghbys_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog dialog = new CustomDialog(context,de_sftghbys_dmz,de_sftghbys_etxt, "是否通过环保验收", "ISHBYS");
+                CustomDialog dialog = new CustomDialog(context, de_sftghbys_dmz, de_sftghbys_etxt, "是否通过环保验收", "ISHBYS");
                 dialog.showQksxDialog();
             }
         });
@@ -266,7 +298,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         de_scqk_etxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomDialog dialog = new CustomDialog(context,de_scqk_dmz,de_scqk_etxt, "生产运行情况", "SCQK");
+                CustomDialog dialog = new CustomDialog(context, de_scqk_dmz, de_scqk_etxt, "生产运行情况", "SCQK");
                 dialog.showQksxDialog();
             }
         });
@@ -318,9 +350,9 @@ public class DevelopConstructionActivity extends AppCompatActivity {
                     //判断手机系统版本号
                     if (Build.VERSION.SDK_INT > 19) {
                         //4.4及以上系统使用这个方法处理图片
-                        photoPath = HandleImage.handleImgeOnKitKat(context,data);
-                    }else {
-                        photoPath = HandleImage.handleImageBeforeKitKat(context,data);
+                        photoPath = HandleImage.handleImgeOnKitKat(context, data);
+                    } else {
+                        photoPath = HandleImage.handleImageBeforeKitKat(context, data);
                     }
                     Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                     de_photo_img.setImageBitmap(bitmap);
@@ -340,10 +372,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
                 Log.i("TAG", "onActivityResult:-------相机相片路径---------> " + photoPath + "----->" + file.getPath());
                 de_photo_img.setImageBitmap(bitmap);
                 //发送广播更新系统相册
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + "pic_" + fileName + ".jpg"));
-                intent.setData(uri);
-                context.sendBroadcast(intent);
+                upDateDcim(fileName);
                 break;
             default:
                 break;
@@ -454,7 +483,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
                 if (IsExist(deBean)) {
                     showMessage("该企业在本地数据已经存在!");
                 } else {
-                    boolean inResult = insertDevelopQyInfo(deBean,0+"");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
+                    boolean inResult = insertDevelopQyInfo(deBean, 0 + "");//存入本地数据库，0--表示未上传服务器，1--表示已上传服务器
                     if (inResult) {
                         showMessage("保存成功!");
                     } else {
@@ -475,10 +504,11 @@ public class DevelopConstructionActivity extends AppCompatActivity {
 
     //==============================================================================================
     private boolean threadFlag;
-    private void upload(){
+
+    private void upload() {
         //1.组织要提交的数据
         DevelopConstructionJsonBean jsonBean = new DevelopConstructionJsonBean();
-        List<DevelopConstructionRecordBean> records  = new ArrayList<>();
+        List<DevelopConstructionRecordBean> records = new ArrayList<>();
         DevelopConstructionBean bean = getDevelopCoustructionBean();
         DevelopConstructionRecordBean recordBean = new DevelopConstructionRecordBean();
         recordBean.setObjectid(jcdId);
@@ -487,7 +517,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         recordBean.setBean(bean);
         records.add(recordBean);
         jsonBean.setKey("07");
-        jsonBean.setYhdh(TempData.username);
+        jsonBean.setYhdh(TempData.yhdh);
         if (activityType.equals("add")) {
             jsonBean.setIschecked("21");
         } else {
@@ -497,7 +527,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
 
         Gson gson = new Gson();
         final String jsonStr = gson.toJson(jsonBean);
-        Log.i(TAG, "onClick: ------------开发建设上传数据----------->"+jsonStr);
+        Log.i(TAG, "onClick: ------------开发建设上传数据----------->" + jsonStr);
         //2.连接服务器上传
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage("是否上传数据？");
@@ -515,33 +545,28 @@ public class DevelopConstructionActivity extends AppCompatActivity {
                     }
                 });
                 progressDialog.show();
-                final String IPURL = getResources().getString(R.string.http_url);
-
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(5*1000);
+                            Thread.sleep(2 * 1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         Message message = Message.obtain();
                         while (threadFlag) {
-                            Response response = ParseIntentData.getDataPostByJson(IPURL +"/WebEsriApp/actionapi/cjwBhqJsxm/SaveBhqJsxmInfo", jsonStr);
+                            Response response = ParseIntentData.getDataPostByJson(IPURL + "/WebEsriApp/actionapi/cjwBhqJsxm/SaveBhqJsxmInfo", jsonStr);
                             if (response != null && response.code() == 200) {
                                 try {
                                     String responseValue = response.body().string();
-                                    if (responseValue.contains("success")) {
-                                        message.what = UPLOADSUCCEED;
-                                        myHandler.sendMessage(message);
-                                    } else {
-                                        message.what = UPLOADFAIL;
-                                        myHandler.sendMessage(message);
-                                    }
+                                    dataUplocadSucceed = responseValue;
+                                    message.what = UPLOADSUCCEED;
+                                    myHandler.sendMessage(message);
+                                    threadFlag = false;
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                                threadFlag = false;
+
                             } else {
                                 message.what = UPLOADFAIL;
                                 myHandler.sendMessage(message);
@@ -562,6 +587,33 @@ public class DevelopConstructionActivity extends AppCompatActivity {
             }
         });
         dialog.create().show();
+    }
+    private void uploadPic(){//上传相片
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("正在上传照片...");
+        progressDialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = Message.obtain();
+                Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+                int bitMapSize = ParseIntentData.getBitmapSize(bitmap);
+                Log.i(TAG, "run: -------bitmap大小----->" + bitMapSize);
+                if (bitMapSize > 202800) {
+                    File file = FileUtils.saveBitmap(PhotoImageSize.revitionImageSize(photoPath), String.valueOf(System.currentTimeMillis()));
+                    photoPath = file.getAbsolutePath();
+                    upDateDcim(file.getName());
+                }
+                String url = IPURL+"/BhqJsxm/Upload";
+                Response response = ParseIntentData.upLoadImage(url, photoPath, dataUplocadSucceed);
+                if (response != null && response.code() == 200) {
+                    message.what = UPLOADPICSUCCEED;
+                } else {
+                    message.what = UPLOADPICFAIL;
+                }
+                myHandler.sendMessage(message);
+            }
+        }).start();
     }
     public void showMessage(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
@@ -587,21 +639,21 @@ public class DevelopConstructionActivity extends AppCompatActivity {
             bhqjb = intent.getStringExtra("bhqjb");
             bhqjbdm = intent.getStringExtra("bhqjbdm");
             jcdId = intent.getStringExtra("placeid");
-            jcdLongitude =intent.getDoubleExtra("longitude",0) ;
-            jcdlatitude = intent.getDoubleExtra("latitude",0);
+            jcdLongitude = intent.getDoubleExtra("longitude", 0);
+            jcdlatitude = intent.getDoubleExtra("latitude", 0);
 
             //------------------------------
             de_bhqmc_etxt.setText(bhqmc);
             de_jb_etxt.setText(bhqjb);
-            de_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            de_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             jsxmID = "0";
         } else {
             mPassKfjsqy = (NoPassKfjsqy) intent.getSerializableExtra("bdData");
             bhqmc = intent.getStringExtra("bdBhqmc");
-            jcdLongitude = intent.getDoubleExtra("bdjd",0);
+            jcdLongitude = intent.getDoubleExtra("bdjd", 0);
             jcdlatitude = intent.getDoubleExtra("bdwd", 0);
             jcdId = intent.getStringExtra("bdobjid");
-            Log.i(TAG, "onResume: ----------bhqmc:"+bhqmc);
+            Log.i(TAG, "onResume: ----------bhqmc:" + bhqmc);
             //--------------------------------------------
             setViewData();//获取更新数据
         }
@@ -612,8 +664,9 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         super.onDestroy();
         mapView.onDestroy();
     }
+
     //============================初始化表单数据============================================
-    public DevelopConstructionBean getDevelopCoustructionBean(){
+    public DevelopConstructionBean getDevelopCoustructionBean() {
         DevelopConstructionBean bean = new DevelopConstructionBean();
         StringBuilder sb = new StringBuilder();
         if (!de_hxq_etxt.getText().toString().trim().equals("")) {
@@ -625,7 +678,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         if (!de_syq_etxt.getText().toString().trim().equals("")) {
             sb.append(de_syq_txt.getText().toString().trim() + ":" + de_syq_etxt.getText().toString().trim());
         }
-        String ybhqwzgx =sb.toString();//与保护区位置关系
+        String ybhqwzgx = sb.toString();//与保护区位置关系
         bean.setBhqid(bhqid);
         bean.setBhqmc(bhqmc);
         bean.setJsxmjb(bhqjbdm);//de_jb_etxt.getText().toString().trim()
@@ -646,13 +699,13 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         bean.setYbhqgx(ybhqwzgx);
         bean.setZgcs(de_lsqk_etxt.getText().toString().trim());
         String centerpoint = de_zxzb_etxt.getText().toString().trim();
-        String pointx ="";
+        String pointx = "";
         String pointy = "";
         if (!"".equals(centerpoint)) {
-            Log.i(TAG, "getIndustryBean: ------centerpoint------->"+centerpoint);
+            Log.i(TAG, "getIndustryBean: ------centerpoint------->" + centerpoint);
             int temp = centerpoint.indexOf(",");
             pointx = centerpoint.substring(0, temp);
-            pointy = centerpoint.substring(temp+1);
+            pointy = centerpoint.substring(temp + 1);
         }
         bean.setCenterpointx(pointx);
         bean.setCenterpointy(pointy);
@@ -668,25 +721,27 @@ public class DevelopConstructionActivity extends AppCompatActivity {
 
         bean.setPhotoPath(photoPath);
         bean.setPlaceid(jcdId);
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         return bean;
     }
+
     //-----------------查询本地数据库是否已经存在该企业名称--------------------------------
-    private boolean IsExist(DevelopConstructionBean bean){
+    private boolean IsExist(DevelopConstructionBean bean) {
         QueryLocalTableData query = new QueryLocalTableData(context);
-        String sql ="select * from DevelopqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
-        String[] strs = new String[]{bean.getBhqid(),bean.getKfjsmc(),bean.getUsername()};
-        List<DevelopConstructionBean> list = query.queryDevelopQyInfos(sql,strs);
+        String sql = "select * from DevelopqyInfo where bhqid = ? and jsxmmc = ? and username = ?";
+        String[] strs = new String[]{bean.getBhqid(), bean.getKfjsmc(), bean.getUsername()};
+        List<DevelopConstructionBean> list = query.queryDevelopQyInfos(sql, strs);
         if (list != null) {
-            if (list.size() >0) {
+            if (list.size() > 0) {
                 return true;//存在
             }
         }
         return false;//不存在
     }
+
     /*插入本地数据
     * */
-    private boolean insertDevelopQyInfo(DevelopConstructionBean bean,String upState){
+    private boolean insertDevelopQyInfo(DevelopConstructionBean bean, String upState) {
 
         boolean result = false;
         if (bean != null) {
@@ -707,26 +762,27 @@ public class DevelopConstructionActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     //============================================================================================
-    private void setViewData(){
+    private void setViewData() {
         if (mPassKfjsqy != null) {
             jsxmID = mPassKfjsqy.getJSXMID();
             bhqid = mPassKfjsqy.getBHQID();
             de_bhqmc_etxt.setText(bhqmc);
-            CodeTypeBean bhqjbB = codeType("BHQJB", mPassKfjsqy.getJSXMJB()==null ? "":mPassKfjsqy.getJSXMJB().toString().trim());
+            CodeTypeBean bhqjbB = codeType("BHQJB", mPassKfjsqy.getJSXMJB() == null ? "" : mPassKfjsqy.getJSXMJB().toString().trim());
             if (bhqjbB != null) {
                 de_jb_etxt.setText(bhqjbB.getDMMC1());
                 bhqjbdm = bhqjbB.getDMZ();
             }
             de_hdmc_etxt.setText(mPassKfjsqy.getKFJSMC());
             de_lx_etxt.setText(mPassKfjsqy.getHDLX());
-           // de_gm_etxt.setText(mPassKfjsqy.get);
-            de_zxzb_etxt.setText(jcdLongitude+","+jcdlatitude);
+            // de_gm_etxt.setText(mPassKfjsqy.get);
+            de_zxzb_etxt.setText(jcdLongitude + "," + jcdlatitude);
             de_xmmzb_etxt.setText(mPassKfjsqy.getMJZB());
             de_scmj_etxt.setText(String.valueOf(mPassKfjsqy.getTJMJ()));
-            if (de_sjqh_radio1.getText().equals(mPassKfjsqy.getBJBHQSJ()==null?"":mPassKfjsqy.getBJBHQSJ().toString().trim())) {
+            if (de_sjqh_radio1.getText().equals(mPassKfjsqy.getBJBHQSJ() == null ? "" : mPassKfjsqy.getBJBHQSJ().toString().trim())) {
                 de_sjqh_radio1.setChecked(true);
-            } else if (de_sjqh_radio2.getText().equals(mPassKfjsqy.getBJBHQSJ()==null?"":mPassKfjsqy.getBJBHQSJ().toString().trim())) {
+            } else if (de_sjqh_radio2.getText().equals(mPassKfjsqy.getBJBHQSJ() == null ? "" : mPassKfjsqy.getBJBHQSJ().toString().trim())) {
                 de_sjqh_radio2.setChecked(true);
             }
             de_hbpfwh_etxt.setText(mPassKfjsqy.getHBPZWH());
@@ -735,7 +791,7 @@ public class DevelopConstructionActivity extends AppCompatActivity {
                 de_sfsbhq_etxt.setText(isBhqB.getDMMC1());
                 de_sfsbhq_dmz.setText(isBhqB.getDMZ());
             }
-            CodeTypeBean isHbysB = codeType("ISHBYS", mPassKfjsqy.getISHBYS()==null ? "": mPassKfjsqy.getISHBYS().toString().trim());
+            CodeTypeBean isHbysB = codeType("ISHBYS", mPassKfjsqy.getISHBYS() == null ? "" : mPassKfjsqy.getISHBYS().toString().trim());
             if (isHbysB != null) {
                 de_sftghbys_etxt.setText(isHbysB.getDMMC1());
                 de_sftghbys_dmz.setText(isHbysB.getDMZ());
@@ -751,11 +807,20 @@ public class DevelopConstructionActivity extends AppCompatActivity {
             de_lsqk_etxt.setText(mPassKfjsqy.getZGCS());
         }
     }
-    private  CodeTypeBean codeType(String dmlb,String dmz){
+
+    private CodeTypeBean codeType(String dmlb, String dmz) {
         dbManager = new DBManager(context);
         String sql = "select * from codeType where dmlb = ? and dmz = ?";
-        String[] bindArgs = new String[]{dmlb,dmz};
-        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql,bindArgs,dbManager);
+        String[] bindArgs = new String[]{dmlb, dmz};
+        List<CodeTypeBean> list = LocalBaseInfo.loadDataBySqlLite(sql, bindArgs, dbManager);
         return list.size() == 0 ? null : list.get(0);
+    }
+    //发送广播更新系统相册
+    private void upDateDcim(String fileName){
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(new File(FileUtils.SDPATH + fileName + ".jpg"));
+        Log.i(TAG, "upDateDcim: -------------filename:"+fileName);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
     }
 }
