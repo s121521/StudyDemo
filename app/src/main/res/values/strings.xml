@@ -15,6 +15,7 @@
     <string name="submenu_report5_name">新能源项目</string>
     <string name="submenu_report6_name">开垦活动</string>
     <string name="submenu_report7_name">其他开发建设活动</string>
+    <string name="submenu_report8_name">遥感监测实地核查表</string>
     <string name="submenu_gps">GPS航迹</string>
     <string name="submenu_way_analyze">路径分析</string>
     <string name="submenu_report_data">样方数据</string>
@@ -41,4 +42,6 @@
     <!--网络请求地址-->
     <string name="http_url">http://192.168.0.8</string>
     <string name="http_gis">http://192.168.0.122:6080</string>
+    <!--<string name="http_url">http://10.15.214.157</string>
+    <string name="http_gis">http://10.15.214.157:9000</string>-->
 </resources>

@@ -1,466 +1,434 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/contentshape"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/contentshape"
+              android:layout_marginLeft="5dp"
+              android:layout_marginRight="5dp"
+              android:orientation="vertical">
     <LinearLayout
-        android:id="@+id/as_bhqmc_layout"
+        android:id="@+id/xchc_bhqmc_layout"
         android:layout_width="match_parent"
         android:layout_height="34dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_bhqmc_txt"
+            android:id="@+id/xchc_bhqmc_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewtopshape"
             android:gravity="center"
             android:text="保护区名称"
-            tools:ignore="HardcodedText" />
+            />
 
         <EditText
-            android:id="@+id/as_bhqmc_etxt"
+            android:id="@+id/xchc_bhqmc_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewtopshape"
             android:focusable="false"
             android:inputType="textPersonName"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
+             />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/as_jb_layout"
+  <!--  <LinearLayout
+        android:id="@+id/xchc_jb_layout"
         android:layout_width="match_parent"
         android:layout_height="34dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_jb_txt"
+            android:id="@+id/xchc_jb_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
             android:text="级别"
-            tools:ignore="HardcodedText" />
+            />
 
         <EditText
-            android:id="@+id/as_jb_etxt"
+            android:id="@+id/xchc_jb_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
             android:focusable="false"
             android:inputType="textPersonName"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/as_kkqkmc_layout"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_kkqkmc_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-            android:gravity="center"
-            android:text="开垦区块名称"
-            tools:ignore="HardcodedText" />
-
-        <EditText
-            android:id="@+id/as_kkqkmc_etxt"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/editviewshape"
-            android:inputType="textPersonName"
-            android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/as_kkmj_layout"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_kkmj_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-            android:gravity="center"
-            android:text="开垦面积"
-            tools:ignore="HardcodedText"
              />
+    </LinearLayout>-->
+
+    <LinearLayout
+        android:id="@+id/xchc_objectid_layout"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_objectid_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="核查点编号"
+            />
 
         <EditText
-            android:id="@+id/as_kkmj_etxt"
+            android:id="@+id/xchc_objectid_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
             android:inputType="textPersonName"
+            android:focusable="false"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor"
-            android:digits="1234567890."
              />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_zwzl_layout"
+        android:id="@+id/xchc_jsxmmc_layout"
         android:layout_width="match_parent"
         android:layout_height="34dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_zwzl_txt"
+            android:id="@+id/xchc_jsxmmc_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
-            android:text="作物种类"
-            tools:ignore="HardcodedText" />
+            android:text="活动/设备名称"
+
+            />
 
         <EditText
-            android:id="@+id/as_zwzl_etxt"
+            android:id="@+id/xchc_jsxmmc_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
             android:inputType="textPersonName"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
+            />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_zxzb_layout"
+        android:id="@+id/xchc_jsxmlx_layout"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_jsxmlx_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="活动/设备类型"
+            />
+
+        <EditText
+            android:id="@+id/xchc_jsxmlx_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            android:enabled="true"
+            android:focusableInTouchMode="false"
+             />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/xchc_jsxmlx_dmz"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/xchc_jsxmlxDetail_layout"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_jsxmlxDetail_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="活动/设备类型详情"
+            />
+
+        <EditText
+            android:id="@+id/xchc_jsxmlxDetail_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/xchc_zxzb_layout"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_zxzb_txt"
-
+            android:id="@+id/xchc_zxzb_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
             android:text="中心坐标"
-            tools:ignore="HardcodedText" />
+            />
 
         <EditText
-            android:id="@+id/as_zxzb_etxt"
-
+            android:id="@+id/xchc_zxzb_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
             android:hint="长按获取中心坐标"
+            android:clickable="true"
             android:maxLines="1"
             android:textSize="12sp"
             android:focusableInTouchMode="false"
-            tools:ignore="HardcodedText" />
+            />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_xmmzb_layout"
+        android:id="@+id/xchc_szgnq_layout"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_szgnq_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="所在功能区"
+            />
+
+        <EditText
+            android:id="@+id/xchc_szgnq_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/xchc_gm_layout"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_gm_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="规模"
+            />
+
+        <EditText
+            android:id="@+id/xchc_gm_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/xchc_bhlx_layout"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_bhlx_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="变化类型"
+            />
+
+        <EditText
+            android:id="@+id/xchc_bhlx_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            android:enabled="true"
+            android:focusableInTouchMode="false"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/xchc_bhlx_dmz"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/xchc_sbxz_layout"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_sbxz_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="活动/设备现状"
+            />
+
+        <EditText
+            android:id="@+id/xchc_sbxz_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/xchc_lsyg_layout"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_xmmzb_txt"
+            android:id="@+id/xchc_lsyg_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
-            android:text="项目面坐标"
-            tools:ignore="HardcodedText"/>
+            android:text="历史沿革(建设时间/建成时间/扩改建情况)"
+            />
 
         <EditText
-            android:id="@+id/as_xmmzb_etxt"
+            android:id="@+id/xchc_lsyg_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
-            android:clickable="true"
-            android:focusableInTouchMode="false"
-            android:hint="长按获取"
+            android:textSize="@dimen/etxt_font_size"
             android:inputType="textMultiLine"
-            android:scrollbars="vertical"
-            android:textSize="12sp"
-            tools:ignore="HardcodedText" />
-
+            />
     </LinearLayout>
-
     <LinearLayout
-        android:id="@+id/as_scmj_layout"
+        android:id="@+id/xchc_hpspxg_layout"
         android:layout_width="match_parent"
-        android:layout_height="34dp"
+        android:layout_height="80dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_scmj_txt"
+            android:id="@+id/xchc_hpspxg_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
-            android:text="实测面积(平方米)"
-            tools:ignore="HardcodedText" />
+            android:text="环评审批等相关手续情况"
+            />
 
         <EditText
-            android:id="@+id/as_scmj_etxt"
+            android:id="@+id/xchc_hpspxg_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
-            android:inputType="textPersonName"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
+            android:inputType="textMultiLine"
+            />
     </LinearLayout>
-
     <LinearLayout
-        android:id="@+id/as_sjqh_layout"
+        android:id="@+id/xchc_styxqk_layout"
         android:layout_width="match_parent"
-        android:layout_height="38dp"
+        android:layout_height="80dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_sjqh_txt"
+            android:id="@+id/xchc_styxqk_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
-            android:text="开垦活动始于保护区始建时间前后"
-            tools:ignore="HardcodedText" />
-
-        <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/editviewshape"
-            android:id="@+id/as_sjqh_groupRadio"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/as_sjqh_radio1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
-                android:layout_weight="1"
-                android:text="前"
-                tools:ignore="HardcodedText,RtlHardcoded" />
-
-            <RadioButton
-                android:id="@+id/as_sjqh_radio2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:text="后"
-                tools:ignore="HardcodedText,RtlHardcoded" />
-        </RadioGroup>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/as_ybhqgx_layout"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/texthintshape"
-            android:gravity="center"
-            android:text="与保护区位置关系"
-            tools:ignore="HardcodedText" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/as_syq_layout"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_syq_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-
-            android:gravity="center"
-            android:text="实验区"
-            tools:ignore="HardcodedText" />
+            android:text="生态影响及破坏情况"
+            />
 
         <EditText
-            android:id="@+id/as_syq_etxt"
+            android:id="@+id/xchc_styxqk_etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
-
-            android:inputType="textPersonName"
+            android:inputType="textMultiLine"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
+            />
     </LinearLayout>
-
     <LinearLayout
-        android:id="@+id/as_hcq_layout"
+        android:id="@+id/xchc_qtsm_layout"
         android:layout_width="match_parent"
-        android:layout_height="34dp"
-
+        android:layout_height="80dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/as_hcq_txt"
+            android:id="@+id/xchc_qtsm_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
-
             android:gravity="center"
-            android:text="缓冲区"
-            tools:ignore="HardcodedText" />
+            android:text="其他需要特别说明的情况"
+            />
 
         <EditText
-            android:id="@+id/as_hcq_etxt"
+            android:id="@+id/xchc_qtsm_Etxt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/editviewshape"
-
-            android:inputType="textPersonName"
+            android:inputType="textMultiLine"
             android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
+            />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_hxq_layout"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_hxq_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-
-            android:gravity="center"
-            android:text="核心区"
-            tools:ignore="HardcodedText" />
-
-        <EditText
-            android:id="@+id/as_hxq_etxt"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/editviewshape"
-
-            android:inputType="textPersonName"
-            android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/as_sfgz_layout"
-        android:layout_width="match_parent"
-        android:layout_height="38dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_sfgz_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-            android:gravity="center"
-            android:text="目前是否耕种"
-            tools:ignore="HardcodedText" />
-
-        <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/editviewshape"
-            android:id="@+id/as_sfgz_groupRadio"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/as_sfgz_radio1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
-                android:layout_weight="1"
-                android:text="是"
-                tools:ignore="HardcodedText,RtlHardcoded" />
-
-            <RadioButton
-                android:id="@+id/as_sfgz_radio2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:text="否"
-                tools:ignore="HardcodedText,RtlHardcoded" />
-        </RadioGroup>
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/as_lsqk_layout"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/as_lsqk_txt"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/textviewshape"
-            android:gravity="center"
-            android:text="整改措施及落实情况"
-            tools:ignore="HardcodedText" />
-
-        <EditText
-            android:id="@+id/as_lsqk_etxt"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/editviewshape"
-
-            android:inputType="textPersonName"
-            android:textSize="@dimen/etxt_font_size"
-            tools:ignore="LabelFor" />
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/as_photo_layout"
+        android:id="@+id/xchc_photo_layout"
         android:layout_width="match_parent"
         android:layout_height="100dp"
 
         android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
+
         android:weightSum="1">
 
         <TextView
-            android:id="@+id/as_photo_txt"
+            android:id="@+id/xchc_photo_txt"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@drawable/textviewshape"
             android:gravity="center"
-            android:text="相片"
-            tools:ignore="HardcodedText" />
+            android:text="现场照片"
+           />
 
         <ImageView
             android:layout_width="115dp"
             android:layout_height="match_parent"
-            android:id="@+id/as_photo_img"
+            android:id="@+id/photoImgV"
             android:scaleType="centerCrop"
             android:background="@drawable/icon_addpic_unfocused"
-            tools:ignore="ContentDescription"
+
             />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/as_canleImage"
+            android:id="@+id/xchc_canleImage"
             android:focusableInTouchMode="false"
             android:layout_weight="1" />
     </LinearLayout>
+
 </LinearLayout>

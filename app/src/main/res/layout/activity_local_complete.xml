@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yaotu.proj.studydemo.activity.LocalCompleteActivity">
+    <Spinner
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:spinnerMode="dialog"
+        android:id="@+id/localComplete_sp"
+        android:background="@color/aliceblue"
+        android:textSize="12sp"
+        ></Spinner>
+    <ListView
+        android:id="@+id/localComplete_lv"
+        android:layout_below="@id/localComplete_sp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:longClickable="true"
+        ></ListView>
+</RelativeLayout>
