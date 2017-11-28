@@ -139,6 +139,13 @@ public class InitMap {
         baiduMap.addOverlay(markerOptions);
 
     }
+    public void drawDotBlue(LatLng latLng){
+        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.icon_openmap_blue_mark);
+        OverlayOptions markerOptions = new MarkerOptions()
+                .position(latLng).icon(bitmapDescriptor).visible(true);
+        baiduMap.addOverlay(markerOptions);
+
+    }
     public void drawPolyLine(List<LatLng> points){//至少两个点
         if (null != overlay_polyline) {
             overlay_polyline.remove();
@@ -212,5 +219,8 @@ public class InitMap {
     public Location getM_location(){
         Log.i(TAG, "InitMap---------getM_location: ---------->"+m_location);
         return m_location;
+    }
+    public void stopLocationListener(){
+        locMag.removeUpdates(m_locationListener);
     }
 }

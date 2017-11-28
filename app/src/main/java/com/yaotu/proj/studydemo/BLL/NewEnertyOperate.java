@@ -296,7 +296,7 @@ public class NewEnertyOperate implements Operate<NewEnergyBean> {
         bean.setVishbys(ne_sftghbys_etxt.getText().toString().trim());
         bean.setVscqk(ne_ktscqk_etxt.getText().toString().trim());
         bean.setPhotoPath(photoPath);
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
        // bean.setUsertel(TempData.usertel);
         bean.setPlaceid(placeid);
         return bean;

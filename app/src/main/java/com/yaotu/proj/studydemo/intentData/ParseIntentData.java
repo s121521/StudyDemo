@@ -1,12 +1,16 @@
 package com.yaotu.proj.studydemo.intentData;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -57,7 +61,8 @@ public class ParseIntentData {
 
     /*以JSON格式传递参数 */
     public static Response getDataPostByJson(String url, String jsonStr) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60, TimeUnit.SECONDS).
+                readTimeout(60,TimeUnit.SECONDS).writeTimeout(60,TimeUnit.SECONDS).build();
         Response response = null;
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         /*String jsonStr = "{\"code\":\"李四\",\"name\":\"25\"}";*/
@@ -73,7 +78,7 @@ public class ParseIntentData {
 
     /*上传单张图片
     * */
-    public static Response upLoadImage(String ipurl, String imagUrl) {
+    public static Response upLoadImage(String ipurl, String imagUrl,String jsxmid) {
         OkHttpClient client = new OkHttpClient();
         Response response = null;
         File imageFile = new File(imagUrl);
@@ -81,7 +86,8 @@ public class ParseIntentData {
         MultipartBody.Builder builder = new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
         builder.addFormDataPart("img", imageFile.getName(), RequestBody.create(mediaType, imageFile));
-        builder.addFormDataPart("tab", "01");
+        Log.i("TAG", "upLoadImage:---------------------> "+imagUrl);
+        //builder.addFormDataPart("jsxmid", jsxmid);
 
         RequestBody requestBody = builder.build();
         //构建请求
@@ -103,7 +109,7 @@ public class ParseIntentData {
         //遍历map中所有参数到builder
         if (params != null) {
             for (String key : params.keySet()) {
-                builder.addFormDataPart(key, params.get(key));
+                builder.addFormDataPart(key, params.get(key)==null?"":params.get(key));
             }
         }
         //遍历paths中所有图片绝对路径到builder，并约定key如“upload”作为后台接受多张图片的key
@@ -128,7 +134,20 @@ public class ParseIntentData {
         return response;
     }
     /*
-    * Androlid中不同API获取Bitmap的大小：
+    * 下载一张图片*/
+    public static Response downLoadPic(String url) {
+        OkHttpClient client = new OkHttpClient();
+        Response response = null;
+        Request request = new Request.Builder().url(url).build();
+        try {
+            response = client.newCall(request).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return response;
+    }
+    /*
+    * Android中不同API获取Bitmap的大小：
     * */
 
 

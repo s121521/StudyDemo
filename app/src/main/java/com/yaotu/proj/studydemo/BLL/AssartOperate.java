@@ -330,7 +330,7 @@ public class AssartOperate implements Operate<AssartBean> {
         ab.setHxmj(as_hxq_etxt.getText().toString().trim());
         ab.setHcmj(as_hcq_etxt.getText().toString().trim());
         ab.setSymj(as_syq_etxt.getText().toString());
-        ab.setUsername(TempData.username);
+        ab.setUsername(TempData.yhdh);
         //ab.setUsertel(TempData.usertel);
         ab.setPlaceid(placeid);
         ab.setPhotoPath(photoPath);

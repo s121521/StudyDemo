@@ -22,6 +22,7 @@ import com.yaotu.proj.studydemo.activity.BackDataActivity;
 import com.yaotu.proj.studydemo.activity.DevelopConstructionActivity;
 import com.yaotu.proj.studydemo.activity.IndustryEnterpriseActivity;
 import com.yaotu.proj.studydemo.activity.KczyDevelopEnterpriseActivity;
+import com.yaotu.proj.studydemo.activity.LocalCompleteActivity;
 import com.yaotu.proj.studydemo.activity.MainActivity;
 import com.yaotu.proj.studydemo.activity.NewEnergyProjActivity;
 import com.yaotu.proj.studydemo.activity.ShowCompleteActivity;
@@ -29,6 +30,8 @@ import com.yaotu.proj.studydemo.activity.TKEnterpriseActivity;
 import com.yaotu.proj.studydemo.activity.TableOneActivity;
 import com.yaotu.proj.studydemo.activity.TableTwoActivity;
 import com.yaotu.proj.studydemo.activity.TravelDevelopEnterpriseActivity;
+import com.yaotu.proj.studydemo.activity.XchcActivity;
+import com.yaotu.proj.studydemo.activity.XchcBackDataActivity;
 import com.yaotu.proj.studydemo.bean.FlagBean;
 import com.yaotu.proj.studydemo.service.MyService;
 import com.yaotu.proj.studydemo.util.DBManager;
@@ -273,18 +276,31 @@ public class CustomWinMenu {
                 intent.putExtra("type","add");
                 context.startActivity(intent);
                 dismiss();
+            }else if(menu_value.equals(context.getString(R.string.submenu_report8_name))){//遥感核查点
+                intent = new Intent(context, XchcActivity.class);
+                intent.putExtra("bhqid", bhqid);
+                intent.putExtra("bhqmc", bhqmc);
+                intent.putExtra("bhqjb", bhqjb);
+                intent.putExtra("bhqjbdm", bhqjbdm);
+                intent.putExtra("placeid", TempData.placeid);
+                intent.putExtra("longitude", TempData.longitude);
+                intent.putExtra("latitude", TempData.latitude);
+                intent.putExtra("type","add");
+                context.startActivity(intent);
+                dismiss();
+
             } else if (menu_value.equals(context.getString(R.string.submenu_gps))) {//GPS航迹
 
                 //FlagBean.GPSFlag = true;
                // TempData.file = FileUtils.definedFile("gps航迹");
-                showMessage("GPS航迹"+TempData.file);
+                showMessage("尚未开发GPS航迹");
                 Log.i("TAG", "onClick:---------gps航迹file------> "+TempData.file);
                 //intentService = new Intent(context, MyService.class);
                 //intentService.putExtra("imei", "dhd");
                 //context.startService(intentService);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_way_analyze))) {//路径分析
-                showMessage("路径分析");
+                showMessage("尚未开发路径分析");
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_report_data))) {//清除样表数据
                 if ("".equals(txtview_flag.getText().toString().trim())) {
@@ -331,12 +347,14 @@ public class CustomWinMenu {
                 FlagBean.GPSFlag = false;
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_complete))) {
-                Intent intent = new Intent(context, ShowCompleteActivity.class);
-                intent.putExtra("p_name", txt_pName.getText().toString().trim());
+                //Intent intent = new Intent(context, ShowCompleteActivity.class);
+                //intent.putExtra("p_name", txt_pName.getText().toString().trim());
+                Intent intent = new Intent(context, LocalCompleteActivity.class);
                 context.startActivity(intent);
                 dismiss();
             } else if (menu_value.equals(context.getString(R.string.submenu_backdata))) {
-                Intent intent = new Intent(context, BackDataActivity.class);
+                //Intent intent = new Intent(context, BackDataActivity.class);
+                Intent intent = new Intent(context, XchcBackDataActivity.class);
                 context.startActivity(intent);
                 dismiss();
             }

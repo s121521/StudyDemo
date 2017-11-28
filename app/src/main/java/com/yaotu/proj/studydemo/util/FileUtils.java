@@ -16,7 +16,7 @@ import java.util.Date;
  */
 
 public class FileUtils {
-    public  static final String SDPATH = Environment.getExternalStorageDirectory()+"/MyAppFile/";
+    public  static final String SDPATH = Environment.getExternalStorageDirectory()+"/jczApp/photo";
 
     /**
      *保存图片文件
@@ -28,13 +28,15 @@ public class FileUtils {
              createDir("");//创建文件夹
             System.out.println("FileUtils.saveBitmap==========>createDir");
         }
-        File f=new File(SDPATH,"pic_"+picName+".jpg");
+       // File f=new File(SDPATH,picName+".jpg");
+        File f=new File(SDPATH,picName);
         if (f.exists()) {
             f.delete();
         }
         try {
             FileOutputStream fos = new FileOutputStream(f);
             bitMap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            //bitMap.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.flush();
             fos.close();
             Log.i("TAG", "保存文件路径: "+f.getAbsolutePath()+"-----------------"+f.getPath());

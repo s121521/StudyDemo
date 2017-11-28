@@ -10,6 +10,7 @@ import com.yaotu.proj.studydemo.bean.tableBean.IndustryBean;
 import com.yaotu.proj.studydemo.bean.tableBean.NewEnergyBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkEnterpriseBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelBean;
+import com.yaotu.proj.studydemo.bean.tableBean.XchcModel;
 import com.yaotu.proj.studydemo.bean.tableBean.kczyBean;
 import com.yaotu.proj.studydemo.util.DBManager;
 
@@ -134,6 +135,22 @@ public class InsertLocalTableData {
                     "tjmj,hxmj,hcmj,symj,trzj,ncz,ybhqgx,photoPath,upState,username,usertel,placeid) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",new String[]{bean.getBhqid(),bean.getBhqmc(),bean.getJsxmjb(),bean.getJsxmid(),
             bean.getKkqkmc(),bean.getKkmj(),bean.getZwzl(),bean.getBjbhqsj(),bean.getIsgz(),bean.getZgcs(),bean.getCenterpointx(),bean.getCenterpointy(),
             bean.getMjzb(),bean.getTjmj(),bean.getHxmj(),bean.getHcmj(),bean.getSymj(),bean.getTrzj(),bean.getNcz(),bean.getYbhqgx(),bean.getPhotoPath(),upState,bean.getUsername(),bean.getUsertel(),bean.getPlaceid()});
+        }
+        if (dbManager != null) {
+            dbManager.closeDB();
+        }
+        return result;
+    }
+    /*现场核查
+    * */
+    public boolean insertXchcInfo(XchcModel bean){
+        boolean result = false;
+        if (bean != null) {
+            result = dbManager.updateBySql("insert into xchcInfoTab(jsxmid,jsxmmc,jsxmlx,jd,wd,szbhqgnq,scale,bhlx,currentstatus,lsyg,hbspxg,styxbh,qtsm,objectid," +
+                    "szbhqmc,jsxmlxdm,ischeckeddm,yhdh,szbhqid,isarchived,bhlxdm,jsxmlxdetails,photourl,photoname,szbhqjb,szbhqjbdm,yhmc) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",new String[]{bean.getJsxmid(),bean.getJsxmmc(),
+            bean.getJsxmlx(),String.valueOf(bean.getJd()),String.valueOf(bean.getWd()),bean.getSzbhqgnq(),bean.getScale(),bean.getBhlx(),bean.getCurrentstatus(),
+            bean.getLsyg(),bean.getHbspxg(),bean.getStyxph(),bean.getQtsm(),String.valueOf(bean.getObjectid()),bean.getSzbhqmc(),bean.getJsxmlxdm(),bean.getIscheckeddm(),
+            bean.getYhdh(),bean.getSzbhqid(),bean.getIsarchived(),bean.getBhlxdm(),bean.getJsxmlxdetails(),bean.getPhotourl(),bean.getPhotoName(),bean.getSzbhqjb(),bean.getSzbhqjbdm(),bean.getSubmitter()});
         }
         if (dbManager != null) {
             dbManager.closeDB();

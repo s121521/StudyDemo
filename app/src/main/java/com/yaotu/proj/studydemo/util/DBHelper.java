@@ -23,9 +23,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("create table place (p_id int,p_name varchar,p_log varchar,p_lat varchar,p_type varchar,p_state varchar)");//创建采集地表--- place
         db.execSQL("create table table1 (p_name varchar, mj varchar,zc varchar)");//创建样例表一--- table1
         //==================================================================================================================================================
-        db.execSQL("create table users(username varchar,password varchar,usertel varchar)");//用户信息表
+        db.execSQL("create table users(yhdh varchar,pwd varchar,yhmc varchar)");//用户信息表
         db.execSQL("create table nopassbhqInfo(bhq_id varchar,bhq_name varchar)");//未通过保护区信息表
-        db.execSQL("create table bhqInfo (bhq_id varchar,bhq_name varchar,bhq_level varchar,bhq_level_dm varchar)");//创建保护区基本信息表 bhqInfo
+        db.execSQL("create table bhqInfo (bhq_id varchar,bhq_name varchar,bhq_level varchar,bhq_level_dm varchar,yhdh varchar)");//创建保护区基本信息表 bhqInfo
         db.execSQL("create table codeType(dmlb varchar,dmz varchar,jb varchar,lb varchar,dmmc1 varchar,dmmc2 varchar,dmmc3 varchar,sxh varchar,bz varchar)");//创建代码类别表
         db.execSQL("create table TkqyInfo(bhqid varchar,bhqmc varchar,bhqjb varchar,jsxmid varchar,jsxmmc varchar,jsxmgm varchar,fzjg varchar,zjyxqb varchar,zjyxqe varchar,bjbhqsj varchar,kqslqk varchar," +
                 "ktfs varchar,kqsx varchar,hbpzwh varchar,isbhq varchar,scqk varchar,zgcs varchar,centerpointx varchar,centerpointy varchar,mjzb varchar," +
@@ -47,8 +47,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 "visbhq varchar,vishbys varchar,vscqk varchar,photoPath varchar,upState varchar,username varchar,usertel varchar,placeid varchar)");//开发建设活动表DevelopqyInfo
         db.execSQL("create table AssartqyInfo(bhqid varchar,bhqmc varchar,bhqjb varchar,jsxmid varchar,jsxmmc varchar,kkmj varchar,zwzl varchar,bjbhqsj varchar,isgz varchar," +
                 "zgcs varchar,centerpointx varchar,centerpointy varchar,mjzb varchar,tjmj varchar,hxmj varchar,hcmj varchar,symj varchar,trzj varchar,ncz varchar,ybhqgx varchar,photoPath varchar,upState varchar,username varchar,usertel varchar,placeid varchar)");// 开垦活动表AssartqyInfo
+
+        db.execSQL("create table xchcInfoTab(jsxmid varchar,jsxmmc varchar,jsxmlx varchar,jd varchar,wd varchar,szbhqgnq varchar,scale varchar," +
+                    "bhlx varchar,currentstatus varchar,lsyg varchar,hbspxg varchar,styxbh varchar,qtsm varchar,objectid varchar,szbhqmc varchar," +
+                    "jsxmlxdm varchar,ischeckeddm varchar,yhdh varchar,szbhqid varchar,isarchived varchar,bhlxdm varchar,jsxmlxdetails varchar," +
+                    "photourl varchar,photoname varchar,szbhqjb varchar,szbhqjbdm varchar,yhmc varchar)");
         //-------------------------------------------------------------
-        db.execSQL("create table bhqpointInfo(objectid varchar,wd varchar,jd varchar,bhqid varchar)");
+        db.execSQL("create table bhqpointInfo(objectid varchar,wd varchar,jd varchar,bhqid varchar,yhdh varchar)");
     }
 
     @Override

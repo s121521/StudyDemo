@@ -6,33 +6,33 @@ package com.yaotu.proj.studydemo.bean;
 
 public class UserBean {
 
-    private String username;
-    private String password;
-    private String usertel;
+    private String yhdh;
+    private String pwd;
+    private String yhmc;
     private String userjgid;
 
-    public String getUsername() {
-        return username;
+    public String getYhdh() {
+        return yhdh;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setYhdh(String yhdh) {
+        this.yhdh = yhdh;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPwd() {
+        return pwd;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
     }
 
-    public String getUsertel() {
-        return usertel;
+    public String getYhmc() {
+        return yhmc;
     }
 
-    public void setUsertel(String usertel) {
-        this.usertel = usertel;
+    public void setYhmc(String yhmc) {
+        this.yhmc = yhmc;
     }
 
     public String getUserjgid() {

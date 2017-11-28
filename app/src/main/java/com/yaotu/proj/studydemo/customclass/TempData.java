@@ -21,7 +21,8 @@ public class TempData {
     public static double longitude = 0;//用来存放监测点经度
     public static double latitude = 0;//用来存放监测点纬度
 
-    public static String username = "";
+    public static String yhdh = "";//表示用户ID
+    public static String yhmc = "";//用户名称
     public static String usertel ="";
     public static File file = null;
 }

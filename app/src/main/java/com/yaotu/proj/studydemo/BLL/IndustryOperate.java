@@ -366,7 +366,7 @@ public class IndustryOperate implements Operate<IndustryBean> {
         ib.setHxmj(in_hxq_etxt.getText().toString().trim());
         ib.setHcmj(in_hcq_etxt.getText().toString().trim());
         ib.setSymj(in_syq_etxt.getText().toString().trim());
-        ib.setUsername(TempData.username);
+        ib.setUsername(TempData.yhdh);
         //ib.setUsertel(TempData.usertel);
         ib.setPlaceid(placeid);
 

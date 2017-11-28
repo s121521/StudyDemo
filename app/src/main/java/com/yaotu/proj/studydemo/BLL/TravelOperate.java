@@ -370,7 +370,7 @@ public class TravelOperate implements Operate<TravelBean> {
         bean.setVishbys(tr_sftghbys_etxt.getText().toString().trim());
         bean.setVyyqk(tr_yyqk_etxt.getText().toString().trim());
         bean.setPhotoPath(photoPath);
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         //bean.setUsertel(TempData.usertel);
         bean.setPlaceid(placeid);
         Log.i(TAG, "getEntityBean: ---------"+bean.getSymj());

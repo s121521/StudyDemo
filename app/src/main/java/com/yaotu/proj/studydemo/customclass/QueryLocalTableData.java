@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.yaotu.proj.studydemo.bean.BhqInfoBean;
+import com.yaotu.proj.studydemo.bean.CodeTypeBean;
 import com.yaotu.proj.studydemo.bean.tableBean.AssartBean;
 import com.yaotu.proj.studydemo.bean.tableBean.DevelopConstructionBean;
 import com.yaotu.proj.studydemo.bean.tableBean.IndustryBean;
@@ -12,6 +14,7 @@ import com.yaotu.proj.studydemo.bean.tableBean.NewEnergyBean;
 import com.yaotu.proj.studydemo.bean.tableBean.QyInfoBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkEnterpriseBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelBean;
+import com.yaotu.proj.studydemo.bean.tableBean.XchcModel;
 import com.yaotu.proj.studydemo.bean.tableBean.kczyBean;
 import com.yaotu.proj.studydemo.util.DBManager;
 
@@ -42,7 +45,7 @@ public class QueryLocalTableData {
            bean.setBhqmc(cursor.getString(cursor.getColumnIndex("bhqmc")));
            bean.setQymc(cursor.getString(cursor.getColumnIndex("jsxmmc")));
            bean.setPlaceid(cursor.getString(cursor.getColumnIndex("placeid")));
-           bean.setTbr(TempData.username);
+           bean.setTbr(TempData.yhdh);
            list.add(bean);
         }
         if (cursor != null) {
@@ -431,5 +434,93 @@ public class QueryLocalTableData {
     public AssartBean queryAssartQyInfo(String sql, String [] bingArgs){
         List<AssartBean> list = queryAssartQyInfos(sql,bingArgs);
         return list.size()>0?list.get(0):null;
+    }
+    //=============================查询现场核查表信息================================================
+    public List<XchcModel> queryXchcInfos(String sql, String [] bingArgs){
+        List<XchcModel> list = new ArrayList<>();
+        cursor = dbManager.queryEntity(sql, bingArgs);
+        while (cursor.moveToNext()) {
+            XchcModel bean = new XchcModel();
+            bean.setJsxmid(cursor.getString(cursor.getColumnIndex("jsxmid")));
+            bean.setJsxmmc(cursor.getString(cursor.getColumnIndex("jsxmmc")));
+            bean.setJsxmlx(cursor.getString(cursor.getColumnIndex("jsxmlx")));
+            bean.setJd(cursor.getDouble(cursor.getColumnIndex("jd")));
+            bean.setWd(cursor.getDouble(cursor.getColumnIndex("wd")));
+            bean.setSzbhqgnq(cursor.getString(cursor.getColumnIndex("szbhqgnq")));
+            bean.setScale(cursor.getString(cursor.getColumnIndex("scale")));
+            bean.setBhlx(cursor.getString(cursor.getColumnIndex("bhlx")));
+            bean.setCurrentstatus(cursor.getString(cursor.getColumnIndex("currentstatus")));
+            bean.setLsyg(cursor.getString(cursor.getColumnIndex("lsyg")));
+            bean.setHbspxg(cursor.getString(cursor.getColumnIndex("hbspxg")));
+            bean.setStyxph(cursor.getString(cursor.getColumnIndex("styxbh")));
+            bean.setQtsm(cursor.getString(cursor.getColumnIndex("qtsm")));
+            bean.setObjectid(cursor.getInt(cursor.getColumnIndex("objectid")));
+            bean.setSzbhqmc(cursor.getString(cursor.getColumnIndex("szbhqmc")));
+            bean.setJsxmlxdm(cursor.getString(cursor.getColumnIndex("jsxmlxdm")));
+            bean.setIscheckeddm(cursor.getString(cursor.getColumnIndex("ischeckeddm")));
+            bean.setYhdh(cursor.getString(cursor.getColumnIndex("yhdh")));
+            bean.setSzbhqid(cursor.getString(cursor.getColumnIndex("szbhqid")));
+            bean.setIsarchived(cursor.getString(cursor.getColumnIndex("isarchived")));
+            bean.setBhlxdm(cursor.getString(cursor.getColumnIndex("bhlxdm")));
+            bean.setJsxmlxdetails(cursor.getString(cursor.getColumnIndex("jsxmlxdetails")));
+            bean.setPhotourl(cursor.getString(cursor.getColumnIndex("photourl")));
+            bean.setPhotoName(cursor.getString(cursor.getColumnIndex("photoname")));
+            bean.setSzbhqjb(cursor.getString(cursor.getColumnIndex("szbhqjb")));
+            bean.setSzbhqjbdm(cursor.getString(cursor.getColumnIndex("szbhqjbdm")));
+            bean.setSubmitter(cursor.getString(cursor.getColumnIndex("yhmc")));
+            list.add(bean);
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return list;
+    }
+    public XchcModel queryXchcInfo(String sql,String[] bingArgs){
+        List<XchcModel> list = queryXchcInfos(sql, bingArgs);
+        return list.size() > 0 ? list.get(0):null;
+    }
+    //===============================================================================================
+    public List<CodeTypeBean> loadAllCodeDataBySqlLite(String sql, String[] bindArgs) {//加载数据
+        cursor = dbManager.queryEntity(sql, bindArgs);
+        List<CodeTypeBean> list = new ArrayList<CodeTypeBean>();
+        while (cursor.moveToNext()) {
+            CodeTypeBean codetype = new CodeTypeBean();
+            codetype.setDMLB(cursor.getString(cursor.getColumnIndex("dmlb")));
+            codetype.setDMZ(cursor.getString(cursor.getColumnIndex("dmz")));
+            codetype.setJB(cursor.getString(cursor.getColumnIndex("jb")));
+            codetype.setLB(cursor.getString(cursor.getColumnIndex("lb")));
+            codetype.setDMMC1(cursor.getString(cursor.getColumnIndex("dmmc1")));
+            codetype.setDMMC2(cursor.getString(cursor.getColumnIndex("dmmc2")));
+            codetype.setDMMC3(cursor.getString(cursor.getColumnIndex("dmmc3")));
+            codetype.setSXH(cursor.getString(cursor.getColumnIndex("sxh")));
+            codetype.setBZ(cursor.getString(cursor.getColumnIndex("bz")));
+            list.add(codetype);
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return list;
+    }
+    //======================查询保护区信息===========================================================
+    public List<BhqInfoBean> queryLocalBhqInfoData(String tabName) {
+        cursor = dbManager.queryEntity("select distinct szbhqid,szbhqmc from " + tabName + " where yhdh = ?", new String[]{TempData.yhdh});
+        List<BhqInfoBean> bhqInfoBeanList = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            BhqInfoBean bean = new BhqInfoBean();
+            bean.setBHQID(cursor.getString(cursor.getColumnIndex("szbhqid")));
+            bean.setBHQNAME(cursor.getString(cursor.getColumnIndex("szbhqmc")));
+            bhqInfoBeanList.add(bean);
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return bhqInfoBeanList;
+    }
+    //===========================================================================================
+    public void closeDbManager(){
+
+        if (dbManager != null) {
+            dbManager.closeDB();
+        }
     }
 }

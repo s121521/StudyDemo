@@ -15,7 +15,7 @@ public class PhotoCompress {
     /*
      1.质量压缩方法：
      */
-    private Bitmap compressImage(Bitmap image) {
+    public Bitmap compressImage(Bitmap image) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
@@ -32,7 +32,7 @@ public class PhotoCompress {
     /*
        2.按比例大小压缩方法（根据路径获取图片并压缩）：
     */
-    private Bitmap getImage(String srcPath) {
+    public Bitmap getImage(String srcPath) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;
@@ -43,7 +43,8 @@ public class PhotoCompress {
         int h = newOpts.outHeight;
         //现在主流手机比较多是800*480分辨率，所以高和宽我们设置为
         float hh = 800f;//这里设置高度为800f
-        float ww = 480f;//这里设置宽度为480f
+        //float ww = 480f;//这里设置宽度为480f
+        float ww = 600f;//这里设置宽度为600f
         //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
         int be = 1;//be=1表示不缩放
         if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
@@ -61,7 +62,7 @@ public class PhotoCompress {
     /*
         3.按比例大小压缩方法（根据Bitmap图片压缩）：
      */
-    private Bitmap getImage(Bitmap image) {
+    public Bitmap getImage(Bitmap image) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);

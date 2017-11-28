@@ -362,7 +362,7 @@ public class DevelopOperate implements Operate<DevelopConstructionBean> {
         bean.setVishbys(de_sftghbys_etxt.getText().toString().trim());
         bean.setVscqk(de_scqk_etxt.getText().toString().trim());
 
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         //bean.setUsertel(TempData.usertel);
         bean.setPlaceid(placeid);
 

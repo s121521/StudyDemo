@@ -392,7 +392,7 @@ public class KczyOperate implements Operate<kczyBean> {
         bean.setHxmj(kc_hxq_etxt.getText().toString().trim());
         bean.setHcmj(kc_hcq_etxt.getText().toString().trim());
         bean.setSymj(kc_syq_etxt.getText().toString().trim());
-        bean.setUsername(TempData.username);
+        bean.setUsername(TempData.yhdh);
         //bean.setUsertel(TempData.usertel);
         bean.setPlaceid(placeid);
 

@@ -110,6 +110,18 @@
             android:label="审核未通过"/>
         <activity android:name=".activity.Demo">
         </activity>
+        <activity
+            android:name=".activity.XchcActivity"
+            android:label="@string/submenu_report8_name">
+        </activity>
+        <activity
+            android:name=".activity.LocalCompleteActivity"
+            android:label="@string/submenu_complete">
+        </activity>
+        <activity android:name=".activity.XchcBackDataActivity"
+            android:label="审核未通过"
+            >
+        </activity>
     </application>
 
 </manifest>

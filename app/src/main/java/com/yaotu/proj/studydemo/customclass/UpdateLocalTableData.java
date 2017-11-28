@@ -9,6 +9,7 @@ import com.yaotu.proj.studydemo.bean.tableBean.IndustryBean;
 import com.yaotu.proj.studydemo.bean.tableBean.NewEnergyBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TkEnterpriseBean;
 import com.yaotu.proj.studydemo.bean.tableBean.TravelBean;
+import com.yaotu.proj.studydemo.bean.tableBean.XchcModel;
 import com.yaotu.proj.studydemo.bean.tableBean.kczyBean;
 import com.yaotu.proj.studydemo.util.DBManager;
 
@@ -138,6 +139,20 @@ public class UpdateLocalTableData {
         }
         if (dbManager != null) {
             dbManager.closeDB();
+        }
+        return result;
+    }
+    /*现场核查点
+    * */
+    public boolean UpdateXchxInfo(XchcModel bean){
+        boolean result = false;
+        if (bean != null) {
+            result = dbManager.updateBySql("update  xchcInfoTab set jsxmid = ?,jsxmmc = ?,jsxmlx = ?,jd = ?,wd = ?,szbhqgnq = ?,scale = ?,bhlx = ?," +
+                    "currentstatus = ?,lsyg = ?,hbspxg = ?,styxbh = ?,qtsm = ?,objectid = ?,szbhqmc = ?,jsxmlxdm = ?,ischeckeddm = ?,yhdh = ?,szbhqid = ?," +
+                    "isarchived = ?,bhlxdm = ?,jsxmlxdetails = ?,photourl = ?,photoname = ?,szbhqjb = ?,szbhqjbdm = ?,yhmc = ? where szbhqid = ? and yhdh = ? and objectid = ?",new String[]{bean.getJsxmid(),bean.getJsxmmc(),
+                    bean.getJsxmlx(),String.valueOf(bean.getJd()),String.valueOf(bean.getWd()),bean.getSzbhqgnq(),bean.getScale(),bean.getBhlx(),bean.getCurrentstatus(),
+                    bean.getLsyg(),bean.getHbspxg(),bean.getStyxph(),bean.getQtsm(),String.valueOf(bean.getObjectid()),bean.getSzbhqmc(),bean.getJsxmlxdm(),bean.getIscheckeddm(),
+                    bean.getYhdh(),bean.getSzbhqid(),bean.getIsarchived(),bean.getBhlxdm(),bean.getJsxmlxdetails(),bean.getPhotourl(),bean.getPhotoName(),bean.getSzbhqjb(),bean.getSzbhqjbdm(),bean.getSubmitter(),bean.getSzbhqid(),bean.getYhdh(),String.valueOf(bean.getObjectid())});
         }
         return result;
     }

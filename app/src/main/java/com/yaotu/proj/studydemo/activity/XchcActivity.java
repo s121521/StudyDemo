@@ -435,6 +435,7 @@ public class XchcActivity extends AppCompatActivity {
         bean.setJsxmlxdetails(xchc_jsxmlxDetail_etxt.getText().toString().trim());
         //bean.setSzbhqjb(xchc_jb_etxt.getText().toString().trim());
         bean.setSzbhqjbdm(bhqjbdm);
+        bean.setSubmitter(TempData.yhmc);
 
         return bean;
     }
