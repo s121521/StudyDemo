@@ -239,7 +239,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Log.i(TAG, "onClick: --------------请求本地数据登录--------------");
                     Intent intent = new Intent(context, MainActivity.class);
                     intent.putExtra("yhdh", yhdh);
-                    intent.putExtra("yhmc", yhmc);
+                    intent.putExtra("yhmc", obj.getYhmc());
                     startActivity(intent);
                     finish();
                 }

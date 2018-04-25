@@ -16,6 +16,7 @@ public class XchcModel implements Serializable{
     private String szbhqgnq;//所在功能区
     private String scale;//规模
     private String bhlx;//变化类型
+    private String bhlxdetails;//变化类型详情
     private String currentstatus;//设备现状
     private String lsyg;//历史沿革
     private String hbspxg;//环评审批等相关手续情况
@@ -287,5 +288,13 @@ public class XchcModel implements Serializable{
 
     public void setSzbhqjbdm(String szbhqjbdm) {
         this.szbhqjbdm = szbhqjbdm;
+    }
+
+    public String getBhlxdetails() {
+        return bhlxdetails;
+    }
+
+    public void setBhlxdetails(String bhlxdetails) {
+        this.bhlxdetails = bhlxdetails;
     }
 }

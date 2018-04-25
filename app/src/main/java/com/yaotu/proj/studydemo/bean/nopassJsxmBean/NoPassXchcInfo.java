@@ -93,6 +93,7 @@ public class NoPassXchcInfo implements Serializable{
     private String ISARCHIVED;
     private String BHLXDM;
     private String JSXMLXDETAILS;
+    private String BHLXDETAILS;
 
     public int getOBJECTID() {
         return OBJECTID;
@@ -420,5 +421,13 @@ public class NoPassXchcInfo implements Serializable{
 
     public void setJSXMLXDETAILS(String JSXMLXDETAILS) {
         this.JSXMLXDETAILS = JSXMLXDETAILS;
+    }
+
+    public String getBHLXDETAILS() {
+        return BHLXDETAILS;
+    }
+
+    public void setBHLXDETAILS(String BHLXDETAILS) {
+        this.BHLXDETAILS = BHLXDETAILS;
     }
 }

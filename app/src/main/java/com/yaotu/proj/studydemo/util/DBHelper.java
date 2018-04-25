@@ -51,7 +51,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("create table xchcInfoTab(jsxmid varchar,jsxmmc varchar,jsxmlx varchar,jd varchar,wd varchar,szbhqgnq varchar,scale varchar," +
                     "bhlx varchar,currentstatus varchar,lsyg varchar,hbspxg varchar,styxbh varchar,qtsm varchar,objectid varchar,szbhqmc varchar," +
                     "jsxmlxdm varchar,ischeckeddm varchar,yhdh varchar,szbhqid varchar,isarchived varchar,bhlxdm varchar,jsxmlxdetails varchar," +
-                    "photourl varchar,photoname varchar,szbhqjb varchar,szbhqjbdm varchar,yhmc varchar)");
+                    "photourl varchar,photoname varchar,szbhqjb varchar,szbhqjbdm varchar,yhmc varchar,bhlxdetails varchar)");
         //-------------------------------------------------------------
         db.execSQL("create table bhqpointInfo(objectid varchar,wd varchar,jd varchar,bhqid varchar,yhdh varchar)");
     }

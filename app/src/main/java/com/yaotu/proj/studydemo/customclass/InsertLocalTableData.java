@@ -147,10 +147,10 @@ public class InsertLocalTableData {
         boolean result = false;
         if (bean != null) {
             result = dbManager.updateBySql("insert into xchcInfoTab(jsxmid,jsxmmc,jsxmlx,jd,wd,szbhqgnq,scale,bhlx,currentstatus,lsyg,hbspxg,styxbh,qtsm,objectid," +
-                    "szbhqmc,jsxmlxdm,ischeckeddm,yhdh,szbhqid,isarchived,bhlxdm,jsxmlxdetails,photourl,photoname,szbhqjb,szbhqjbdm,yhmc) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",new String[]{bean.getJsxmid(),bean.getJsxmmc(),
+                    "szbhqmc,jsxmlxdm,ischeckeddm,yhdh,szbhqid,isarchived,bhlxdm,jsxmlxdetails,photourl,photoname,szbhqjb,szbhqjbdm,yhmc,bhlxdetails) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",new String[]{bean.getJsxmid(),bean.getJsxmmc(),
             bean.getJsxmlx(),String.valueOf(bean.getJd()),String.valueOf(bean.getWd()),bean.getSzbhqgnq(),bean.getScale(),bean.getBhlx(),bean.getCurrentstatus(),
             bean.getLsyg(),bean.getHbspxg(),bean.getStyxph(),bean.getQtsm(),String.valueOf(bean.getObjectid()),bean.getSzbhqmc(),bean.getJsxmlxdm(),bean.getIscheckeddm(),
-            bean.getYhdh(),bean.getSzbhqid(),bean.getIsarchived(),bean.getBhlxdm(),bean.getJsxmlxdetails(),bean.getPhotourl(),bean.getPhotoName(),bean.getSzbhqjb(),bean.getSzbhqjbdm(),bean.getSubmitter()});
+            bean.getYhdh(),bean.getSzbhqid(),bean.getIsarchived(),bean.getBhlxdm(),bean.getJsxmlxdetails(),bean.getPhotourl(),bean.getPhotoName(),bean.getSzbhqjb(),bean.getSzbhqjbdm(),bean.getSubmitter(),bean.getBhlxdetails()});
         }
         if (dbManager != null) {
             dbManager.closeDB();

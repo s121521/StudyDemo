@@ -468,6 +468,7 @@ public class QueryLocalTableData {
             bean.setSzbhqjb(cursor.getString(cursor.getColumnIndex("szbhqjb")));
             bean.setSzbhqjbdm(cursor.getString(cursor.getColumnIndex("szbhqjbdm")));
             bean.setSubmitter(cursor.getString(cursor.getColumnIndex("yhmc")));
+            bean.setBhlxdetails(cursor.getString(cursor.getColumnIndex("bhlxdetails")));
             list.add(bean);
         }
         if (cursor != null) {

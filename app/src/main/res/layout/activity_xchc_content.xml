@@ -275,6 +275,30 @@
             />
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/xchc_bhlxdetails_layout"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/xchc_bhlxdetails_txt"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/textviewshape"
+            android:gravity="center"
+            android:text="变化类型详情"
+            />
+
+        <EditText
+            android:id="@+id/xchc_bhlxdetails_etxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/editviewshape"
+            android:inputType="textPersonName"
+            android:textSize="@dimen/etxt_font_size"
+            />
+    </LinearLayout>
+    <LinearLayout
         android:id="@+id/xchc_sbxz_layout"
         android:layout_width="match_parent"
         android:layout_height="38dp"

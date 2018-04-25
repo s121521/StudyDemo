@@ -83,7 +83,7 @@ public class XchcActivity extends AppCompatActivity {
     private EditText xchc_jsxmlx_etxt,xchc_zxzb_etxt,xchc_szgnq_etxt;
     private EditText xchc_gm_etxt,xchc_bhlx_etxt,xchc_sbxz_etxt;
     private EditText xchc_lsyg_etxt,xchc_hpspxg_etxt,xchc_styxqk_etxt;
-    private EditText xchc_qtsm_Etxt,xchc_objectid_etxt,xchc_jsxmlxDetail_etxt;
+    private EditText xchc_qtsm_Etxt,xchc_objectid_etxt,xchc_jsxmlxDetail_etxt,xchc_bhlxdetails_etxt;
     private TextView xchc_canleImage,xchc_jsxmlx_dmz,xchc_bhlx_dmz;
     private Button xchc_btn_save;
     private String jsxmID,isChecked,IPURL,pointx,pointy;
@@ -197,6 +197,7 @@ public class XchcActivity extends AppCompatActivity {
         xchc_szgnq_etxt = (EditText) findViewById(R.id.xchc_szgnq_etxt);
         xchc_gm_etxt = (EditText) findViewById(R.id.xchc_gm_etxt);
         xchc_bhlx_etxt = (EditText) findViewById(R.id.xchc_bhlx_etxt);
+        xchc_bhlxdetails_etxt = (EditText) findViewById(R.id.xchc_bhlxdetails_etxt);
         xchc_bhlx_dmz = (TextView) findViewById(R.id.xchc_bhlx_dmz);
         xchc_sbxz_etxt = (EditText) findViewById(R.id.xchc_sbxz_etxt);
         xchc_lsyg_etxt = (EditText) findViewById(R.id.xchc_lsyg_etxt);
@@ -433,10 +434,10 @@ public class XchcActivity extends AppCompatActivity {
         //bean.setSzbhqjb(xchc_jb_etxt.getText().toString().trim());
         bean.setSzbhqjbdm(bhqjbdm);
         bean.setSubmitter(TempData.yhmc);
-
+        bean.setBhlxdetails(xchc_bhlxdetails_etxt.getText().toString().trim());
         return bean;
     }
-    private String checkedStatue;
+    private String checkedStatue = "21";
     private void setViewData() {
         if (dataModel != null) {
             jsxmID = dataModel.getJsxmid();
@@ -464,6 +465,7 @@ public class XchcActivity extends AppCompatActivity {
             xchc_jsxmlx_dmz.setText(dataModel.getJsxmlxdm());
             xchc_bhlx_dmz.setText(dataModel.getBhlxdm());
             xchc_jsxmlxDetail_etxt.setText(dataModel.getJsxmlxdetails());
+            xchc_bhlxdetails_etxt.setText(dataModel.getBhlxdetails());
             if (!isCameraAlbumBack) {
                 photoPath = dataModel.getPhotourl();
                 if (photoPath != null) {
@@ -505,6 +507,7 @@ public class XchcActivity extends AppCompatActivity {
             xchc_jsxmlx_dmz.setText(bean.getJSXMLXDM());
             xchc_bhlx_dmz.setText(bean.getBHLXDM());
             xchc_jsxmlxDetail_etxt.setText(bean.getJSXMLXDETAILS());
+            xchc_bhlxdetails_etxt.setText(bean.getBHLXDETAILS());
         }
 
     }
@@ -632,15 +635,6 @@ public class XchcActivity extends AppCompatActivity {
         List<XchcModel> list = new ArrayList<>();
         dataModel = getXchcModel();
         XchcJsonBean jsonBean = new XchcJsonBean();
-       /* if (activityType.equals("add") ||activityType.equals("update") ) {
-            if (checkedStatue == "22") {
-                dataModel.setIscheckeddm("22");
-            } else {
-                dataModel.setIscheckeddm("21");
-            }
-        } else if (activityType.equals("backUpdate")) {
-            dataModel.setIscheckeddm("22");
-        }*/
         list.add(dataModel);
         jsonBean.setList(list);
         Gson gson = new Gson();
