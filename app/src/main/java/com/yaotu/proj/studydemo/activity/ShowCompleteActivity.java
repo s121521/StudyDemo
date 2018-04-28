@@ -77,6 +77,7 @@ import com.yaotu.proj.studydemo.customclass.UpdateLocalTableData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -958,7 +959,7 @@ public class ShowCompleteActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if ("".equals(ipUrl) || ipUrl == null) {
-            ipUrl = getResources().getString(R.string.http_url);
+            ipUrl = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
         }
     }
 

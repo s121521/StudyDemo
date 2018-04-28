@@ -33,6 +33,7 @@ import com.yaotu.proj.studydemo.bean.tableBean.XchcModel;
 import com.yaotu.proj.studydemo.customclass.CheckNetwork;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -187,7 +188,7 @@ public class XchcBackDataActivity extends AppCompatActivity implements SwipeRefr
     @Override
     protected void onResume() {
         super.onResume();
-        ipURl = getResources().getString(R.string.http_url);
+        ipURl = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
         requestIntentData();
     }
     @Override

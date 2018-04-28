@@ -33,6 +33,7 @@ import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassBhqInfo;
 import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassInfo;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class BackDataActivity extends AppCompatActivity {
         currContext = this;
         bhqInfos = new ArrayList<>();
         detailedInfo = new ArrayList<>();
-        IPURL = getResources().getString(R.string.http_url);
+        IPURL = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
         initView();
     }
 

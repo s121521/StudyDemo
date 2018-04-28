@@ -35,6 +35,7 @@ import com.yaotu.proj.studydemo.customclass.QueryLocalTableData;
 import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -258,7 +259,7 @@ public class BhqDataActivity extends AppCompatActivity implements SwipeRefreshLa
     }
     //----------------------联网获取数据---------------------------------
     private void findBhqInfosByInternet() {
-        final String ipUrl = getResources().getString(R.string.http_url);
+        final String ipUrl = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
         new Thread(new Runnable() {
             @Override
             public void run() {//获取保护区基本信息数据

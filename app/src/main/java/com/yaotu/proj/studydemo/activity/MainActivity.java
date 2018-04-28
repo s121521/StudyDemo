@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
         //-----------------------------------------
         SubMenu subMenu3 = menu.addSubMenu("地图选择");
         subMenu3.add(3, 3, 1, "百度地图");
-        subMenu3.add(3, 4, 2, "在线地图");
+        //subMenu3.add(3, 4, 2, "在线地图");
         subMenu3.add(3, 5, 3, "离线地图");
         subMenu3.clearHeader();
         menu.add(4, 6, 1, "保护区选择");

@@ -51,6 +51,7 @@ import com.yaotu.proj.studydemo.customclass.UpdateLocalTableData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -352,7 +353,7 @@ public class XchcActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mIntent = getIntent();
-        IPURL = getResources().getString(R.string.http_url);
+        IPURL = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
         activityType = mIntent.getStringExtra("type");
         if (activityType.equals("add")) {//新增数据操作
             bhqid = mIntent.getStringExtra("bhqid");

@@ -56,6 +56,7 @@ import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -183,7 +184,7 @@ public class KczyDevelopEnterpriseActivity extends AppCompatActivity {
         initView();
         initMethod();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
-        IPURL = getResources().getString(R.string.http_url);
+        IPURL = HttpUrlAddress.getHttpUrl();// getResources().getString(R.string.http_url);
     }
 
     private void initView() {

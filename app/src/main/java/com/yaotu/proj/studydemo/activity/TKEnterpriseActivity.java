@@ -78,6 +78,7 @@ import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.FileUtils;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -207,7 +208,7 @@ public class TKEnterpriseActivity extends AppCompatActivity {
 
         initView();//初始化页面需要的基本view
         initMethod();//定义基本元素事件
-        IPURL = getResources().getString(R.string.http_url);//服务器IP地址
+        IPURL = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);//服务器IP地址
     }
 
     private void initView() {
