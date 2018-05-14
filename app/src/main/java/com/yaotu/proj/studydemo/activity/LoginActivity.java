@@ -1,5 +1,6 @@
 package com.yaotu.proj.studydemo.activity;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,7 +8,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,25 +24,20 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.tbruyelle.rxpermissions2.Permission;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.yaotu.proj.studydemo.R;
 import com.yaotu.proj.studydemo.bean.LoginBean;
 import com.yaotu.proj.studydemo.bean.UserBean;
-import com.yaotu.proj.studydemo.common.Encrypt;
-import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
 import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 import com.yaotu.proj.studydemo.util.SharedPreferencesManager;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
+import io.reactivex.functions.Consumer;
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
@@ -61,6 +56,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private final int LOGINERROR = 0x111;
     private DBManager dbManager;
     private Cursor cursor;
+    RxPermissions rxPermissions;
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -79,7 +75,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     break;
                 case LOGINERROR:
                     progressDialog.dismiss();
-                    showMessage("用户名或密码错误");
+                    showMessage("登录失败");
                     break;
                 default:
                     break;
@@ -95,6 +91,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         initView();
         initMethod();
         mDialog = defineSetIpDialog();
+        rxPermissions = new RxPermissions(this);
+        requestPermissions();
     }
 
     private void initView() {
@@ -428,5 +426,31 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (dbManager != null) {
             dbManager.closeDB();
         }
+        closeDialog();
+    }
+
+    private void requestPermissions() {
+        rxPermissions.requestEach(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.CAMERA)
+                .subscribe(new Consumer<Permission>() {
+                    @Override
+                    public void accept(Permission permission) throws Exception {
+                        if (permission.granted) {
+                            // 用户已经同意该权限
+                        } else if (permission.shouldShowRequestPermissionRationale) {
+                            // 用户拒绝了该权限，没有选中『不再询问』（Never ask again）,那么下次再次启动时，还会提示请求权限的对话框
+
+                        } else {
+                            // 用户拒绝了该权限，并且选中『不再询问』
+                        }
+                    }
+                });
+
+
     }
 }

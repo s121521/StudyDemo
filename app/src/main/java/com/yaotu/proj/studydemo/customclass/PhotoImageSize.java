@@ -25,6 +25,9 @@ public class PhotoImageSize {
         Log.i("TAG", "revitionImageSize: "+path);
         BufferedInputStream in = null;
         Bitmap bitmap = null;
+        if (path == null) {
+            return bitmap;
+        }
         try {
             in = new BufferedInputStream(new FileInputStream(new File(path)));
             BitmapFactory.Options options = new BitmapFactory.Options();

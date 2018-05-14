@@ -88,6 +88,7 @@ import com.yaotu.proj.studydemo.customclass.TempData;
 import com.yaotu.proj.studydemo.intentData.ParseIntentArcgisLayer;
 import com.yaotu.proj.studydemo.intentData.ParseIntentData;
 import com.yaotu.proj.studydemo.util.DBManager;
+import com.yaotu.proj.studydemo.util.HttpUrlAddress;
 import com.yaotu.proj.studydemo.util.MyGeoDataBase;
 
 import org.json.JSONArray;
@@ -872,7 +873,7 @@ public class MainActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String http = getResources().getString(R.string.http_url);
+                    String http = HttpUrlAddress.getHttpUrl();// getResources().getString(R.string.http_url);
                     Message message = Message.obtain();
                     while (threadFlag) {
                         Response response = ParseIntentData.getDataPostByString(http + "/bhqService/BhqJsxm/GetBhqPointInfo", builder);
@@ -928,7 +929,7 @@ public class MainActivity extends AppCompatActivity {
     private Graphic[] arcgis_graphics;
     private void findLayerByBhqid(String bhqid) {
         arcgisThreadFlag = true;
-        final String url = getResources().getString(R.string.http_gis);
+        final String url = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_gis);
         final String where = "bhqid = '" + bhqid + "'";
         new Thread(new Runnable() {
             @Override

@@ -1,5 +1,6 @@
 package com.yaotu.proj.studydemo.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -33,6 +34,8 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
 import com.google.gson.Gson;
+import com.tbruyelle.rxpermissions2.Permission;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.yaotu.proj.studydemo.R;
 import com.yaotu.proj.studydemo.bean.nopassJsxmBean.NoPassXchcInfo;
 import com.yaotu.proj.studydemo.bean.tableBean.XchcJsonBean;
@@ -61,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import io.reactivex.functions.Consumer;
 import okhttp3.Response;
 /*
 * 现场核查区情况
@@ -109,6 +113,7 @@ public class XchcActivity extends AppCompatActivity {
     private final int PICDOWNLOADFAIL = 0X005;//照片下载失败
     private DBManager dbManager;
     private boolean isCameraAlbumBack = false;//是否从相册或照相机返回执行onresume
+
     //---------------------------------------------
     private Handler myHandler = new Handler(new Handler.Callback() {
         @Override
@@ -187,6 +192,7 @@ public class XchcActivity extends AppCompatActivity {
         initView();
         initMap = new InitMap(context, mapView, baiduMap, txt_showInfo);
         systemPicPath = Environment.getExternalStorageDirectory() + File.separator + Environment.DIRECTORY_DCIM + File.separator;
+
     }
     private void initView(){//初始化view
         xchc_bhqmc_etxt = (EditText) findViewById(R.id.xchc_bhqmc_etxt);
@@ -265,7 +271,7 @@ public class XchcActivity extends AppCompatActivity {
         final String[] items = new String[]{"拍照", "从相册选择"};
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(final DialogInterface dialog, int which) {
                 switch (which) {
                     case 0://启动相机代码
                        /*
@@ -289,10 +295,21 @@ public class XchcActivity extends AppCompatActivity {
                         dialog.dismiss();
                         break;
                     case 1:
-                        mIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                        mIntent.setType("image/*");
-                        startActivityForResult(mIntent, OPEN_ALBUM);
-                        dialog.dismiss();
+                        RxPermissions rxPermissions = new RxPermissions(XchcActivity.this);
+                        rxPermissions.requestEach(Manifest.permission.CAMERA)
+                                .subscribe(new Consumer<Permission>() {
+                                    @Override
+                                    public void accept(Permission permission) throws Exception {
+                                        if (permission.granted) {
+                                            // 用户已经同意该权限
+                                            mIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                                            mIntent.setType("image/*");
+                                            startActivityForResult(mIntent, OPEN_ALBUM);
+                                            dialog.dismiss();
+                                        }
+                                        Log.i(TAG, "accept: -----------"+permission.granted);
+                                    }
+                                });
                         break;
                 }
             }
@@ -305,12 +322,13 @@ public class XchcActivity extends AppCompatActivity {
         switch (requestCode) {
             case OPEN_ALBUM:
                 if (resultCode == RESULT_OK) {
-                    if (Build.VERSION.SDK_INT > 19) {
+                    /*if (Build.VERSION.SDK_INT > 19) {
                         //4.4及以上系统使用这个方法处理图片
                         photoPath = HandleImage.handleImgeOnKitKat(context, data);
                     } else {
                         photoPath = HandleImage.handleImageBeforeKitKat(context, data);
-                    }
+                    }*/
+                    photoPath = HandleImage.getPath(XchcActivity.this, data.getData());
                     Bitmap bitmap = PhotoImageSize.revitionImageSize(photoPath);
                    photoImgV.setImageBitmap(bitmap);
                 }
