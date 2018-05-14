@@ -246,6 +246,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 //2.存在：直接登录；不存在：请求服务器登录,若登录成功则跳转界面并保存用户信息
                 if (obj == null) {
                     loginService(yhdh, userPwd);
+                    Log.i(TAG, "onClick: ----------http request");
                 } else {
                     Log.i(TAG, "onClick: --------------请求本地数据登录--------------");
                     Intent intent = new Intent(context, MainActivity.class);
@@ -275,35 +276,47 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         progressDialog.show();
         //3.开启一个新线程,请求服务器
         final String ipUrl = HttpUrlAddress.getHttpUrl();//getResources().getString(R.string.http_url);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Message message = Message.obtain();
-                    Response response = ParseIntentData.getDataPostByString(ipUrl + "/bhqService/Account/Login_Phone", builder);
-                    if (response != null && response.code() == 200) {
-                        String responseValue = response.body().string();
-                        Gson gson = new Gson();
-                        Type type = new TypeToken<LoginBean>() {
-                        }.getType();
-                        LoginBean obj = gson.fromJson(responseValue, type);
-                        if (obj.getRETURNVALUE().equals("SUCCEED")) {
-                            message.what = LOGINSUCCESS;
-                            yhmc = obj.getUSERNAME();
-                            myHandler.sendMessage(message);
-                        } else if (obj.getRETURNVALUE().equals("ERROR")) {
+        Thread myThread = null;
+        if (myThread == null) {
+            myThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Message message = Message.obtain();
+                        Response response = ParseIntentData.getDataPostByString(ipUrl + "/bhqService/Account/Login_Phone", builder);
+                        Log.i(TAG, "run: -----------------start------"+response);
+                        if (response != null && response.code() == 200) {
+                            String responseValue = response.body().string();
+                            Gson gson = new Gson();
+                            Type type = new TypeToken<LoginBean>() {
+                            }.getType();
+                            LoginBean obj = gson.fromJson(responseValue, type);
+                            if (obj.getRETURNVALUE().equals("SUCCEED")) {
+                                message.what = LOGINSUCCESS;
+                                yhmc = obj.getUSERNAME();
+                                myHandler.sendMessage(message);
+                            } else if (obj.getRETURNVALUE().equals("ERROR") && obj.getMESSAGE().contains("已登陆")) {
+                                message.what = LOGINSUCCESS;
+                                yhmc = obj.getUSERNAME();
+                                myHandler.sendMessage(message);
+                            } else {
+                                message.what = LOGINERROR;
+                                myHandler.sendMessage(message);
+                            }
+                        } else {
                             message.what = LOGINERROR;
                             myHandler.sendMessage(message);
                         }
-                    } else {
-                        message.what = LOGINERROR;
-                        myHandler.sendMessage(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-        }).start();
+            });
+            myThread.start();
+        } else if (!myThread.isAlive()) {
+            Log.i(TAG, "loginService: ---------"+myThread.isAlive());
+            myThread.start();
+        }
     }
 
     private boolean saveUserLocal(String yhdh, String pwd, String yhmc) {
